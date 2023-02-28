@@ -1,0 +1,25 @@
+### Java Database Connectivity
+
+JDBC (англ. Java DataBase Connectivity — соединение с базами данных на Java) — 
+платформенно независимый промышленный стандарт взаимодействия Java-приложений 
+с различными СУБД, реализованный в виде пакета java.sql, входящего в состав 
+Java SE.
+
+JDBC основан на концепции так называемых драйверов, позволяющих получать 
+соединение с базой данных по специально описанному URL. Драйверы могут 
+загружаться динамически (во время работы программы). Загрузившись, драйвер 
+сам регистрирует себя и вызывается автоматически, когда программа требует 
+URL, содержащий протокол, за который драйвер отвечает.
+
+- [JDBCLessonOne](https://github.com/JcoderPaul/JDBC_Practice/tree/master/ConnectLessOne) - Пример создания соединения с базой данных PostgreSQL только 
+                средствами Java;
+- [JDBCLessonTwo](https://github.com/JcoderPaul/JDBC_Practice/tree/master/ConnectLessTwo/src) - Пример создания соединения с базой данных PostgreSQL с 
+                применением самописного ["утилитного" класса](https://github.com/JcoderPaul/JDBC_Practice/blob/master/ConnectLessTwo/src/connection_util/ConnectionManager.java);
+- [JDBCLessonThree](https://github.com/JcoderPaul/JDBC_Practice/tree/master/ConnectLessThree) - Пример создания соединения с базой данных с использованием
+                  файла свойств - [application.properties](https://github.com/JcoderPaul/JDBC_Practice/blob/master/ConnectLessThree/resources/application.properties);
+- [SqlOperationLess](https://github.com/JcoderPaul/JDBC_Practice/tree/master/SqlOperationLess) - Примеры создания и отправки SQL запросов к базе данных с использованием интерфейсов [Statement](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/Statement_Interface.txt) и [PrepareStatement](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/PreparedStatement_Interface.txt) ([особенности методов](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlOperationLess/src/SQLQueryApp_8.java) и [возможные проблемы](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlOperationLess/src/SQLQueryApp_6_bad.java));
+- [SqlAdvancedLess](https://github.com/JcoderPaul/JDBC_Practice/tree/master/SqlAdvancedLess) - Примеры создания SQL запросов при помощи методов [PrepareStatement](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_9.java), исследование методов [DatabaseMetaData](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_10.java) см. документацию [DatabaseMetaData](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/DatabaseMetaData_Interface.txt). [COMMIT и ROLLBACK](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_11.java) транзакций. Исследование пакетных [запросов Batch](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_12.java). Пример работы с [Blob и Clob](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_13.java) полями базы данных;
+- [ConnectionPoolLess](https://github.com/JcoderPaul/JDBC_Practice/tree/master/ConnectionPoolLess) - Пример [создания пула соединений](https://github.com/JcoderPaul/JDBC_Practice/blob/master/ConnectionPoolLess/src/connection_util/ConnectionPoolManager.java) и [исследование метода позволяющего извлекать любые автоматически
+  сгенерированные ключи](https://github.com/JcoderPaul/JDBC_Practice/blob/master/ConnectionPoolLess/src/CPMTestApp.java);
+- [DataAccessObjectLess](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DataAccessObjectLess/src/DAOLessonsOne) - Исследование шаблона проектирования DAO (data access object), его [классов](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DataAccessObjectLess/src/DAOLessonsOne/flight_repository_dao) и [сущностей](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DataAccessObjectLess/src/DAOLessonsOne/flight_repository_entity) позволяющих взаимодействовать с базой данных. Пример применения шаблона проектирования [Data Transfer Object (DTO)](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DataAccessObjectLess/src/DAOLessonsOne/flight_repository_dto), который используется для передачи данных между подсистемами приложения, использование специального [класса Record](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/Records.txt);
+- [DaoEntityMappingLess](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DaoEntityMappingLess) - Пример работы [связанных сущностей](https://github.com/JcoderPaul/JDBC_Practice/tree/master/DaoEntityMappingLess/src/DAOLessonsTwo/flight_repository_dao) (как таблиц базы данных связанных внешним ключом) и применение принципов [data access object (DAO) на базе интерфейса](https://github.com/JcoderPaul/JDBC_Practice/blob/master/DaoEntityMappingLess/src/DAOLessonsTwo/flight_repository_dao/Dao.java).
