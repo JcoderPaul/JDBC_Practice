@@ -1,0 +1,116 @@
+****** Class Timestamp ******
+
+public class Timestamp extends Date
+
+Все реализованные интерфейсы: Serializable,
+                              Cloneable,
+                              Comparable<Date>
+
+Тонкая оболочка вокруг java.util.Date, которая позволяет JDBC API идентифицировать
+объекты класса как значение SQL TIMESTAMP. Данный класс добавляет возможность хранить
+значение SQL TIMESTAMP в долях секунд, позволяя указывать доли секунд с точностью
+до наносекунд. Отметка времени также обеспечивает операции форматирования и
+синтаксического анализа для поддержки синтаксиса escape-последовательности JDBC для
+значений отметки времени.
+
+Точность объекта Timestamp вычисляется следующим образом:
+
+19 , количество символов в формате yyyy-mm-dd hh:mm:ss (гггг-мм-дд чч:мм:сс);
+20 + s , что является количеством символов в формате yyyy-mm-dd hh:mm:ss.[fff...],
+         а s представляет масштаб данной метки времени, ее точность долей секунды.
+
+!!! Примечание !!! Этот тип представляет собой комбинацию java.util.Date и отдельного
+значения в наносекундах. В компоненте java.util.Date хранятся только целые секунды.
+Доли секунды — нано — разделены. Метод Timestamp.equals(Object) никогда не возвращает
+значение true при передаче объекта, который не является экземпляром java.sql.Timestamp,
+поскольку компонент nanos даты неизвестен. В результате метод Timestamp.equals(Object)
+не является симметричным по отношению к методу java.util.Date.equals(Object).
+
+Кроме того, метод hashCode использует базовую реализацию java.util.Date и, следовательно,
+не включает наночастицы в свои вычисления.
+
+Из-за различий между классом Timestamp и классом java.util.Date, упомянутым выше,
+рекомендуется, чтобы код не рассматривал значения Timestamp в общем виде как экземпляр
+java.util.Date. Отношение наследования между Timestamp и java.util.Date действительно
+обозначает наследование реализации, а не наследование типа.
+
+****** Конструкторы ******
+
+Timestamp(int year,
+          int month,
+          int date,
+          int hour,
+          int minute,
+          int second,
+          int nano) - Устарел, не рекомендуется к применению. Использовать
+                      конструктор Timestamp(longmills)
+
+Timestamp(long time) - Создает объект Timestamp, используя значение времени в миллисекундах.
+
+****** Методы ******
+
+boolean after(Timestamp ts) - Указывает, является ли этот объект Timestamp
+                              более поздним, чем данный объект Timestamp.
+
+boolean before(Timestamp ts) - Указывает, является ли этот объект Timestamp
+                               более ранним, чем данный объект Timestamp.
+
+int compareTo(Date o) - Сравнивает этот объект Timestamp с заданным
+                        объектом Date.
+
+int compareTo(Timestamp ts) - Сравнивает этот объект Timestamp с данным
+                              объектом Timestamp.
+
+boolean equals(Object ts) - Проверяет, равен ли этот объект Timestamp
+                            заданному объекту.
+
+boolean equals(Timestamp ts) - Проверяет, равен ли этот объект Timestamp
+                               заданному объекту Timestamp.
+
+static Timestamp from(Instant instant) - Получает экземпляр Timestamp из
+                                         объекта Instant.
+
+int getNanos() - Получает значение nanos этого объекта Timestamp.
+
+long getTime() - Возвращает количество миллисекунд с 1 января 1970 года,
+                 00:00:00 по Гринвичу, представленное этим объектом
+                 Timestamp.
+
+int hashCode() - Возвращает значение хэш-кода для этого объекта.
+
+void setNanos(int n) - Устанавливает поле nanos этого объекта Timestamp
+                       в заданное значение.
+
+void setTime(long time) - Устанавливает этот объект Timestamp для представления
+                          момента времени, то есть времени в миллисекундах после
+                          1 января 1970 года 00:00:00 по Гринвичу.
+
+Instant toInstant() - Преобразует этот объект Timestamp в Instant.
+
+LocalDateTime toLocalDateTime() - Преобразует этот объект Timestamp в LocalDateTime.
+
+String toString() - Форматирует временную метку в escape-формате временной метки JDBC.
+
+static Timestamp valueOf(LocalDateTime dateTime) - Получает экземпляр Timestamp из объекта
+                                                   LocalDateTime с тем же годом, месяцем,
+                                                   днем месяца, часами, минутами, секундами
+                                                   и значением даты и времени, что и
+                                                   предоставленное значение LocalDateTime.
+
+static Timestamp valueOf(String s) - Преобразует объект String в escape-формате временной
+                                     метки JDBC в значение временной метки.
+
+****** Методы, унаследованные от класса java.util.Date ******
+
+after, before, clone, getDate, getDay, getHours, getMinutes, getMonth, getSeconds,
+getTimezoneOffset, getYear, parse, setDate, setHours, setMinutes, setMonth, setSeconds,
+setYear, toGMTString, toLocaleString, UTC
+
+****** Методы, унаследованные от класса java.lang.Object ******
+
+finalize, getClass, notify, notifyAll, wait, wait, wait
+
+**************************************************************************************************
+См. более подробную документацию (ENG):
+https://docs.oracle.com/javase/8/docs/api/java/sql/Timestamp.html
+**************************************************************************************************

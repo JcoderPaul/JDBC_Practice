@@ -1,0 +1,577 @@
+****** Interface DatabaseMetaData ******
+
+public interface DatabaseMetaData extends Wrapper
+
+Все суперинтерфейсы: Wrapper
+
+Интерфейс позволяющий получить исчерпывающую информацию о базе данных
+в целом.
+
+Этот интерфейс реализуется поставщиками драйверов, чтобы пользователи
+знали о возможностях системы управления базами данных (СУБД) в сочетании
+с драйвером, основанным на технологии JDBCTM ("драйвер JDBC"), который
+используется с ней. Различные реляционные СУБД часто поддерживают разные
+функции, реализуют функции по-разному и используют разные типы данных.
+Кроме того, драйвер может реализовать функцию поверх того, что предлагает
+СУБД. Информация, возвращаемая методами в этом интерфейсе, относится к
+возможностям конкретного драйвера и конкретной СУБД, работающих вместе.
+Обратите внимание, что в этой документации термин «база данных»
+используется в общем для обозначения как драйвера, так и СУБД.
+
+Пользователь этого интерфейса обычно является инструментом, которому
+необходимо узнать, как обращаться с лежащей в его основе СУБД. Это
+особенно верно для приложений, предназначенных для использования более
+чем с одной СУБД. Например, инструмент может использовать метод
+getTypeInfo, чтобы узнать, какие типы данных можно использовать в
+операторе CREATE TABLE. Или пользователь может вызвать метод
+supportsCorrelatedSubqueries, чтобы узнать, можно ли использовать
+коррелированный подзапрос, или supportsBatchUpdates, чтобы узнать,
+возможно ли использовать пакетные обновления.
+
+Некоторые методы DatabaseMetaData возвращают списки информации в виде
+объектов ResultSet. Обычные методы ResultSet, такие, как getString и
+getInt, можно использовать для извлечения данных из этих объектов
+ResultSet. Если данная форма метаданных недоступна, будет возвращен
+пустой набор результатов. Дополнительные столбцы помимо столбцов,
+определенных для возврата объектом ResultSet для данного метода, могут
+быть определены поставщиком драйвера JDBC, и доступ к ним должен
+осуществляться по метке столбца.
+
+Некоторые методы DatabaseMetaData принимают аргументы, являющиеся
+строковыми шаблонами. Все эти аргументы имеют такие имена, как
+fooPattern. Применение шаблона "%" означает соответствие любой
+подстроке из 0 или более символов, а "_" означает соответствие
+любому одному символу. Возвращаются только записи метаданных,
+соответствующие шаблону поиска. Если для аргумента шаблона поиска
+задано значение null, критерий этого аргумента будет исключен из
+поиска.
+
+****** Поля и константы ******
+
+static short attributeNoNulls - Указывает, что NULL значения могут быть недопустимыми.
+static short attributeNullable - Указывает, что NULL значения определенно разрешены.
+static short attributeNullableUnknown - Указывает, что NULL неизвестно, разрешены ли значения.
+static int bestRowNotPseudo - Указывает, что лучший идентификатор строки НЕ является
+                              псевдостолбцом.
+static int bestRowPseudo - Указывает, что лучшим идентификатором строки является
+                           псевдостолбец.
+static int bestRowSession - Указывает, что областью действия лучшего идентификатора строки
+                            является оставшаяся часть текущего сеанса.
+static int bestRowTemporary - Указывает, что область действия лучшего идентификатора строки
+                              является временной и действует только на время использования
+                              строки.
+static int bestRowTransaction - Указывает, что областью действия лучшего идентификатора строки
+                                является оставшаяся часть текущей транзакции.
+static int bestRowUnknown - Указывает, что лучший идентификатор строки может быть или не быть
+                            псевдостолбцом.
+static int columnNoNulls - Указывает, что в столбце могут быть запрещены NULL значения.
+static int columnNullable - Указывает, что столбец определенно допускает NULL значения.
+static int columnNullableUnknown - Указывает, что допустимость значений NULL для столбцов
+                                   неизвестна.
+static int functionColumnIn - Указывает, что параметр или столбец является параметром IN.
+static int functionColumnInOut - Указывает, что параметр или столбец является параметром INOUT.
+static int functionColumnOut - Указывает, что параметр или столбец является параметром OUT.
+static int functionColumnResult - Указывает, что параметр или столбец является столбцом в
+                                  результирующем наборе.
+static int functionColumnUnknown - Указывает, что тип параметра или столбца неизвестен.
+static int functionNoNulls - Указывает, что NULL значения не разрешены.
+static int functionNoTable - Указывает, что функция не возвращает таблицу.
+static int functionNullable - Указывает, что NULL значения разрешены.
+static int functionNullableUnknown - Указывает, что NULL неизвестно, разрешены ли значения.
+static int functionResultUnknown - Указывает, что неизвестно, возвращает ли функция результат
+                                   или таблицу.
+static int functionReturn - Указывает, что параметр или столбец является возвращаемым значением.
+static int functionReturnsTable - Указывает, что функция возвращает таблицу.
+static int importedKeyCascade - Для столбца UPDATE_RULE указывает, что при обновлении первичного
+                                ключа внешний ключ (импортированный ключ) изменяется в
+                                соответствии с ним.
+static int importedKeyInitiallyDeferred - Указывает на отсрочку.
+static int importedKeyInitiallyImmediate - Указывает на отсрочку.
+static int importedKeyNoAction - Для столбцов UPDATE_RULE и DELETE_RULE означает, что если
+                                 первичный ключ был импортирован, его нельзя обновить или
+                                 удалить.
+static int importedKeyNotDeferrable - Указывает на отсрочку.
+static int importedKeyRestrict - Для столбца UPDATE_RULE указывает, что первичный ключ не может
+                                 быть обновлен, если он был импортирован другой таблицей как
+                                 внешний ключ.
+static int importedKeySetDefault - Для столбцов UPDATE_RULE и DELETE_RULE указывает, что при
+                                   обновлении или удалении первичного ключа для внешнего ключа
+                                   (импортированного ключа) - Устанавливается значение
+                                   по-умолчанию.
+static int importedKeySetNull - Для столбцов UPDATE_RULE и DELETE_RULE указывает, что при
+                                обновлении или удалении первичного ключа внешний ключ
+                                (импортированный ключ) изменяется на NULL.
+static int procedureColumnIn - Указывает, что в столбце хранятся параметры IN.
+static int procedureColumnInOut - Указывает, что столбец хранит параметры INOUT.
+static int procedureColumnOut - Указывает, что столбец хранит параметры OUT.
+static int procedureColumnResult - Указывает, что в столбце хранятся результаты.
+static int procedureColumnReturn - Указывает, что столбец хранит возвращаемые значения.
+static int procedureColumnUnknown - Указывает, что тип столбца неизвестен.
+static int procedureNoNulls - Указывает, что NULL значения не разрешены.
+static int procedureNoResult - Указывает, что процедура не возвращает результат.
+static int procedureNullable - Указывает, что NULL значения разрешены.
+static int procedureNullableUnknown - Указывает, что NULL неизвестно, разрешены ли значения.
+static int procedureResultUnknown - Указывает, что неизвестно, возвращает ли процедура результат.
+static int procedureReturnsResult - Указывает, что процедура возвращает результат.
+static int sqlStateSQL - Возможное возвращаемое значение для метода DatabaseMetaData.getSQLStateType,
+                         которое используется для указания, является ли значение, возвращаемое методом,
+                         SQLException.getSQLState значением SQLSTATE.
+static int sqlStateSQL99 - Возможное возвращаемое значение для метода DatabaseMetaData.getSQLStateType,
+                           которое используется для указания, является ли значение, возвращаемое методом,
+                           SQLException.getSQLState значением SQLSTATE SQL99.
+static int sqlStateXOpen - Возможное возвращаемое значение для метода DatabaseMetaData.getSQLStateType,
+                           которое используется, чтобы указать, является ли значение, возвращаемое методом,
+                           SQLException.getSQLState значением X/Open (теперь известное как Open Group)
+                           SQL CLI SQLSTATE.
+static short tableIndexClustered - Указывает, что этот индекс таблицы является кластеризованным индексом.
+static short tableIndexHashed - Указывает, что этот индекс таблицы является хешированным индексом.
+static short tableIndexOther - Указывает, что этот индекс таблицы не является кластеризованным индексом,
+                               хешированным индексом или статистикой таблицы; это нечто иное, чем это.
+static short tableIndexStatistic - Указывает, что этот столбец содержит статистику таблицы, которая
+                                   возвращается вместе с описаниями индекса таблицы.
+static int typeNoNulls - Указывает, что NULL значение НЕ разрешено для этого типа данных.
+static int typeNullable - Указывает, что NULL значение разрешено для этого типа данных.
+static int typeNullableUnknown - Указывает, что неизвестно, NULL допустимо ли значение для
+                                 этого типа данных.
+static int typePredBasic - Указывает, что тип данных можно использовать только в WHERE предложениях
+                           поиска, в которых не используются LIKE предикаты.
+static int typePredChar - Указывает, что тип данных можно использовать только в WHERE предложениях
+                          поиска, использующих LIKE предикаты.
+static int typePredNone - Указывает, что WHERE предложения поиска не поддерживаются для этого типа.
+static int typeSearchable - Указывает, что все WHERE предложения поиска могут быть основаны на этом типе.
+static int versionColumnNotPseudo - Указывает, что этот столбец версии НЕ является псевдостолбцом.
+static int versionColumnPseudo - Указывает, что этот столбец версии является псевдостолбцом.
+static int versionColumnUnknown - Указывает, что этот столбец версии может быть или не быть псевдостолбцом.
+
+****** МЕТОДЫ ******
+
+boolean allProceduresAreCallable() - Возвращает (извлекает), может ли текущий пользователь
+                                     вызывать все процедуры, возвращаемые методом getProcedures.
+boolean	allTablesAreSelectable() - Возвращает (извлекает), может ли текущий пользователь
+                                   использовать все таблицы, возвращаемые методом getTables
+                                   в SELECT инструкции.
+boolean	autoCommitFailureClosesAllResultSets() - Возвращает (извлекает) информацию о том,
+                                                 указывает ли SQLException автокоммит while true
+                                                 на то, что все открытые наборы результатов
+                                                 закрыты, даже те, которые можно удерживать.
+boolean	dataDefinitionCausesTransactionCommit() - Возвращает (извлекает), заставляет ли оператор
+                                                  определения данных в транзакции фиксировать
+                                                  транзакцию.
+boolean	dataDefinitionIgnoredInTransactions() - Возвращает (извлекает), игнорирует ли эта база
+                                                данных оператор определения данных в транзакции.
+boolean	deletesAreDetected(int type) - Возвращает (извлекает) информацию о том, можно ли обнаружить
+                                       видимое удаление строки, вызвав метод ResultSet.rowDeleted.
+boolean	doesMaxRowSizeIncludeBlobs() - Возвращает (извлекает), включает ли возвращаемое значение
+                                       для метода getMaxRowSize типы данных SQL LONGVARCHAR и
+                                       LONGVARBINARY.
+boolean	generatedKeyAlwaysReturned() - Возвращает (извлекает), будет ли всегда возвращаться
+                                       сгенерированный ключ, если имя(на) столбца или индекс(ы),
+                                       указанные для автоматически сгенерированного ключевого
+                                       столбца(ов), являются допустимыми и оператор выполнен успешно.
+ResultSet getAttributes(String catalog,
+                        String schemaPattern,
+                        String typeNamePattern,
+                        String attributeNamePattern) - Извлекает описание заданного атрибута заданного
+                                                       типа для определяемого пользователем типа (UDT),
+                                                       доступного в заданной схеме и каталоге.
+ResultSet getBestRowIdentifier(String catalog,
+                               String schema,
+                               String table,
+                               int scope,
+                               boolean nullable) - Извлекает описание оптимального набора столбцов
+                                                   таблицы, который однозначно идентифицирует строку.
+ResultSet getCatalogs() - Извлекает имена каталогов, доступные в этой базе данных.
+String getCatalogSeparator() - Возвращает (извлекает) то String, что эта база данных использует в
+                               качестве разделителя между каталогом и именем таблицы.
+String getCatalogTerm() - Возвращает (извлекает) предпочтительный термин поставщика базы
+                          данных для "каталога".
+ResultSet getClientInfoProperties() - Извлекает список свойств сведений о клиенте,
+                                      поддерживаемых драйвером.
+ResultSet getColumnPrivileges(String catalog,
+                              String schema,
+                              String table,
+                              String columnNamePattern) - Возвращает (извлекает) описание прав доступа
+                                                          для столбцов таблицы.
+ResultSet getColumns(String catalog,
+                     String schemaPattern,
+                     String tableNamePattern,
+                     String columnNamePattern) - Извлекает описание столбцов таблицы,
+                                                 доступных в указанном каталоге.
+Connection getConnection() - Извлекает соединение, создавшее этот объект метаданных.
+ResultSet getCrossReference(String parentCatalog,
+                            String parentSchema,
+                            String parentTable,
+                            String foreignCatalog,
+                            String foreignSchema,
+                            String foreignTable) - Извлекает описание столбцов внешнего ключа в заданной
+                                                   таблице внешнего ключа, которые ссылаются на первичный
+                                                   ключ или столбцы, представляющие уникальное ограничение
+                                                   родительской таблицы (может быть той же или другой
+                                                   таблицей).
+int	getDatabaseMajorVersion() - Извлекает основной номер версии базовой базы данных.
+int	getDatabaseMinorVersion() - Извлекает дополнительный номер версии базовой базы данных.
+String getDatabaseProductName() - Возвращает (извлекает) имя этого продукта базы данных.
+String getDatabaseProductVersion() - Возвращает (извлекает) номер версии этого продукта базы данных.
+int	getDefaultTransactionIsolation() - Извлекает уровень изоляции транзакций этой базы
+                                       данных по умолчанию.
+int	getDriverMajorVersion() - Извлекает основной номер версии этого драйвера JDBC.
+int	getDriverMinorVersion() - Извлекает дополнительный номер версии этого драйвера JDBC.
+String getDriverName() - Возвращает (извлекает) имя этого драйвера JDBC.
+String getDriverVersion() - Извлекает номер версии этого драйвера JDBC в виде файла String.
+ResultSet getExportedKeys(String catalog,
+                          String schema,
+                          String table) - Извлекает описание столбцов внешнего ключа, которые ссылаются
+                                          на столбцы первичного ключа данной таблицы
+                                          (внешние ключи, экспортируемые таблицей).
+String getExtraNameCharacters() - Извлекает все «лишние» символы, которые могут использоваться в именах
+                                  идентификаторов без кавычек (за пределами az, AZ, 0–9 и _).
+ResultSet getFunctionColumns(String catalog,
+                             String schemaPattern,
+                             String functionNamePattern,
+                             String columnNamePattern) - Извлекает описание системных или пользовательских
+                                                         параметров данного каталога и тип возвращаемого
+                                                         значения.
+ResultSet getFunctions(String catalog,
+                       String schemaPattern,
+                       String functionNamePattern) - Извлекает описание системных и пользовательских
+                                                     функций, доступных в данном каталоге.
+String getIdentifierQuoteString() - Извлекает строку, используемую для кавычек идентификаторов SQL.
+ResultSet getImportedKeys(String catalog,
+                          String schema,
+                          String table) - Извлекает описание столбцов первичного ключа, на которые
+                                          ссылаются столбцы внешнего ключа данной таблицы
+                                          (первичные ключи, импортированные таблицей).
+ResultSet getIndexInfo(String catalog,
+                       String schema,
+                       String table,
+                       boolean unique,
+                       boolean approximate) - Извлекает описание индексов и статистики данной таблицы.
+int	getJDBCMajorVersion() - Возвращает (извлекает) основной номер версии JDBC для этого драйвера.
+int	getJDBCMinorVersion() - Возвращает (извлекает) дополнительный номер версии JDBC для этого драйвера.
+int	getMaxBinaryLiteralLength() - Извлекает максимальное количество шестнадцатеричных символов,
+                                  разрешенных этой базой данных во встроенном двоичном литерале.
+int	getMaxCatalogNameLength() - Извлекает максимальное количество символов, которое эта база данных
+                                допускает в имени каталога.
+int	getMaxCharLiteralLength() - Извлекает максимальное количество символов, которое эта база данных
+                                допускает для символьного литерала.
+int	getMaxColumnNameLength() - Извлекает максимальное количество символов, которое эта база данных
+                               допускает для имени столбца.
+int	getMaxColumnsInGroupBy() - Извлекает максимальное количество столбцов, разрешенных этой базой
+                               данных в предложении GROUP BY.
+int	getMaxColumnsInIndex() - Извлекает максимальное количество столбцов, которое эта база данных
+                             допускает в индексе.
+int	getMaxColumnsInOrderBy() - Извлекает максимальное количество столбцов, разрешенных этой базой
+                               данных в предложении ORDER BY.
+int	getMaxColumnsInSelect() - Извлекает максимальное количество столбцов, которое эта база
+                              данных допускает в SELECT списке.
+int	getMaxColumnsInTable() - Извлекает максимальное количество столбцов, разрешенных этой
+                             базой данных в таблице.
+int	getMaxConnections() - Извлекает максимально возможное количество одновременных
+                          подключений к этой базе данных.
+int	getMaxCursorNameLength() - Извлекает максимальное количество символов, которое эта
+                               база данных допускает в имени курсора.
+int	getMaxIndexLength() - Извлекает максимальное количество байтов, которое позволяет эта
+                          база данных для индекса, включая все части индекса.
+int	getMaxProcedureNameLength() - Извлекает максимальное количество символов, которое
+                                  эта база данных допускает в имени процедуры.
+int	getMaxRowSize() - Извлекает максимальное количество байтов, которое позволяет
+                      эта база данных в одной строке.
+int	getMaxSchemaNameLength() - Извлекает максимальное количество символов, которое эта
+                               база данных допускает в имени схемы.
+int	getMaxStatementLength() - Извлекает максимальное количество символов, которое эта
+                              база данных допускает в операторе SQL.
+int	getMaxStatements() - Возвращает (извлекает) максимальное количество активных инструкций
+                         в этой базе данных, которые могут быть открыты одновременно.
+int	getMaxTableNameLength() - Извлекает максимальное количество символов, которое эта
+                              база данных допускает в имени таблицы.
+int	getMaxTablesInSelect() - Извлекает максимальное количество таблиц, которое эта
+                             база данных допускает в SELECT операторе.
+int	getMaxUserNameLength() - Извлекает максимальное количество символов, которое эта
+                             база данных допускает в имени пользователя.
+String getNumericFunctions() - Возвращает (извлекает) разделенный запятыми список
+                               математических функций, доступных в этой базе данных.
+ResultSet getPrimaryKeys(String catalog,
+                         String schema,
+                         String table) - Извлекает описание столбцов первичного ключа
+                                         данной таблицы.
+ResultSet getProcedureColumns(String catalog,
+                              String schemaPattern,
+                              String procedureNamePattern,
+                              String columnNamePattern) - Извлекает описание параметра
+                                                          хранимой процедуры данного
+                                                          каталога и столбцов результатов.
+ResultSet getProcedures(String catalog,
+                        String schemaPattern,
+                        String procedureNamePattern) - Извлекает описание хранимых процедур,
+                                                       доступных в данном каталоге.
+String getProcedureTerm() - Возвращает (извлекает) предпочтительный термин
+                            поставщика базы данных для "процедуры".
+ResultSet getPseudoColumns(String catalog,
+                           String schemaPattern,
+                           String tableNamePattern,
+                           String columnNamePattern) - Извлекает описание псевдо или скрытых столбцов,
+                                                       доступных в данной таблице в указанном каталоге
+                                                       и схеме.
+int	getResultSetHoldability() - Возвращает (извлекает) доступность по умолчанию для объектов
+                                этой базы данных ResultSet .
+RowIdLifetime getRowIdLifetime() - Указывает, поддерживает ли этот источник данных ROWID тип SQL,
+                                   и если да, то время жизни, в течение которого объект RowId
+                                   остается действительным.
+ResultSet getSchemas() - Извлекает имена схем, доступные в этой базе данных.
+ResultSet getSchemas(String catalog,
+                     String schemaPattern) - Извлекает имена схем, доступные в этой базе данных.
+String getSchemaTerm() - Возвращает (извлекает) предпочтительный термин поставщика
+                         базы данных для "схемы".
+String getSearchStringEscape() - Извлекает строку, которую можно использовать для
+                                 экранирования подстановочных знаков.
+String getSQLKeywords() - Извлекает разделенный запятыми список всех ключевых слов SQL
+                          этой базы данных, которые НЕ являются также ключевыми
+                          словами SQL:2003.
+int	getSQLStateType() - Указывает, является ли возвращаемый SQLSTATE SQLException.getSQLState X/Open
+                        (теперь известный как Open Group) SQL CLI или SQL:2003.
+String getStringFunctions() - Возвращает (извлекает) разделенный запятыми список
+                              строковых функций, доступных в этой базе данных.
+ResultSet getSuperTables(String catalog,
+                         String schemaPattern,
+                         String tableNamePattern) - Извлекает описание иерархий таблиц,
+                                                    определенных в конкретной схеме в
+                                                    этой базе данных.
+ResultSet getSuperTypes(String catalog,
+                        String schemaPattern,
+                        String typeNamePattern) - Извлекает описание иерархий пользовательского
+                                                  типа (UDT), определенных в конкретной схеме в
+                                                  этой базе данных.
+String getSystemFunctions() - Возвращает (извлекает) разделенный запятыми список системных функций,
+                              доступных в этой базе данных.
+ResultSet getTablePrivileges(String catalog,
+                             String schemaPattern,
+                             String tableNamePattern) - Возвращает (извлекает) описание прав доступа
+                                                        для каждой таблицы, доступной в каталоге.
+ResultSet getTables(String catalog,
+                    String schemaPattern,
+                    String tableNamePattern,
+                    String[] types) - Извлекает описание таблиц, доступных в данном каталоге.
+ResultSet getTableTypes() - Извлекает типы таблиц, доступные в этой базе данных.
+String getTimeDateFunctions() - Возвращает (извлекает) разделенный запятыми список функций
+                                времени и даты, доступных в этой базе данных.
+ResultSet getTypeInfo() - Возвращает (извлекает) описание всех типов данных,
+                          поддерживаемых этой базой данных.
+ResultSet getUDTs(String catalog,
+                  String schemaPattern,
+                  String typeNamePattern,
+                  int[] types) - Извлекает описание определяемых пользователем типов (UDT),
+                                 определенных в конкретной схеме.
+String getURL() - Возвращает (извлекает) URL для этой СУБД.
+String getUserName() - Извлекает имя пользователя, известное этой базе данных.
+ResultSet getVersionColumns(String catalog,
+                            String schema,
+                            String table) - Возвращает (извлекает) описание столбцов таблицы,
+                                            которые автоматически обновляются при обновлении
+                                            любого значения в строке.
+boolean	insertsAreDetected(int type) - Возвращает (извлекает) информацию о том, можно ли обнаружить
+                                       видимую вставку строки, вызвав метод ResultSet.rowInserted.
+boolean	isCatalogAtStart() - Возвращает (извлекает), появляется ли каталог в начале полного имени таблицы.
+boolean	isReadOnly() - Возвращает (извлекает), находится ли эта база данных в режиме только для чтения.
+boolean	locatorsUpdateCopy() - Указывает, выполняются ли обновления большого объекта в копии или
+                               непосредственно в большом объекте.
+boolean	nullPlusNonNullIsNull() - Возвращает (извлекает), поддерживает ли эта база данных
+                                  конкатенацию между NULL и не- NULL значениями,
+                                  являющимися NULL.
+boolean	nullsAreSortedAtEnd() - Возвращает (извлекает), NULL сортируются ли значения в конце,
+                                независимо от порядка сортировки.
+boolean	nullsAreSortedAtStart() - Возвращает (извлекает), NULL сортируются ли значения в начале,
+                                  независимо от порядка сортировки.
+boolean	nullsAreSortedHigh() - Возвращает (извлекает), NULL отсортированы ли значения по высоте.
+boolean	nullsAreSortedLow() - Возвращает (извлекает), NULL отсортированы ли значения по нижнему краю.
+boolean	othersDeletesAreVisible(int type) - Возвращает (извлекает), видны ли удаления, сделанные другими.
+boolean	othersInsertsAreVisible(int type) - Возвращает (извлекает), видны ли вставки, сделанные другими.
+boolean	othersUpdatesAreVisible(int type) - Возвращает (извлекает), видны ли обновления, сделанные другими.
+boolean	ownDeletesAreVisible(int type) - Возвращает (извлекает), видны ли собственные удаления
+                                         результирующего набора.
+boolean	ownInsertsAreVisible(int type) - Возвращает (извлекает), видны ли собственные вставки
+                                         результирующего набора.
+boolean	ownUpdatesAreVisible(int type) - Возвращает (извлекает), видны ли для данного типа ResultSet
+                                         объекта собственные обновления результирующего набора.
+boolean	storesLowerCaseIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база данных идентификаторы
+                                       SQL без кавычек в смешанном регистре как нечувствительные к регистру
+                                       и сохраняет их в нижнем регистре.
+boolean	storesLowerCaseQuotedIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база данных
+                                             идентификаторы SQL в смешанных кавычках как нечувствительные
+                                             к регистру и сохраняет их в нижнем регистре.
+boolean	storesMixedCaseIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база данных
+                                       идентификаторы SQL без кавычек в смешанном регистре как
+                                       нечувствительные к регистру и сохраняет их в смешанном
+                                       регистре.
+boolean	storesMixedCaseQuotedIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база
+                                             данных идентификаторы SQL в кавычках смешанного
+                                             регистра как нечувствительные к регистру и сохраняет
+                                             их в смешанном регистре.
+boolean	storesUpperCaseIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база данных
+                                       идентификаторы SQL без кавычек в смешанном регистре как
+                                       нечувствительные к регистру и сохраняет их в верхнем
+                                       регистре.
+boolean	storesUpperCaseQuotedIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база
+                                             данных идентификаторы SQL в смешанных кавычках как
+                                             нечувствительные к регистру и сохраняет их в
+                                             верхнем регистре.
+boolean	supportsAlterTableWithAddColumn() - Возвращает (извлекает), поддерживает ли эта база
+                                            данных ALTER TABLE добавление столбца.
+boolean	supportsAlterTableWithDropColumn() - Возвращает (извлекает), поддерживает ли эта база
+                                             данных ALTER TABLE столбец перетаскивания.
+boolean	supportsANSI92EntryLevelSQL() - Возвращает (извлекает), поддерживает ли эта база данных
+                                        грамматику SQL начального уровня ANSI92.
+boolean	supportsANSI92FullSQL() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                  база данных поддерживаемую полную грамматику SQL ANSI92.
+boolean	supportsANSI92IntermediateSQL() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                          эта база данных поддерживаемую промежуточную грамматику
+                                          SQL ANSI92.
+boolean	supportsBatchUpdates() - Возвращает (извлекает), поддерживает ли эта база данных
+                                 пакетные обновления.
+boolean	supportsCatalogsInDataManipulation() - Возвращает (извлекает) информацию о том, можно ли
+                                               использовать имя каталога в операторе обработки данных.
+boolean	supportsCatalogsInIndexDefinitions() - Возвращает (извлекает) информацию о том, можно ли
+                                               использовать имя каталога в операторе определения индекса.
+boolean	supportsCatalogsInPrivilegeDefinitions() - Возвращает (извлекает) информацию о том, можно ли
+                                                   использовать имя каталога в операторе определения
+                                                   привилегий.
+boolean	supportsCatalogsInProcedureCalls() - Возвращает (извлекает) информацию о том, можно ли
+                                             использовать имя каталога в операторе вызова процедуры.
+boolean	supportsCatalogsInTableDefinitions() - Возвращает (извлекает) информацию о том, можно ли
+                                               использовать имя каталога в операторе определения
+                                               таблицы.
+boolean	supportsColumnAliasing() - Возвращает (извлекает), поддерживает ли эта база данных
+                                   псевдонимы столбцов.
+boolean	supportsConvert() - Определяет, поддерживает ли эта база данных скалярную функцию JDBC CONVERT
+                            для преобразования одного типа JDBC в другой.
+boolean	supportsConvert(int fromType, int toType) - Возвращает (извлекает), поддерживает ли эта база
+                                                    данных скалярную функцию JDBC CONVERT для
+                                                    преобразований между типами JDBC fromType и toType.
+boolean	supportsCoreSQLGrammar() - Возвращает (извлекает), поддерживает ли эта база данных
+                                   грамматику ODBC Core SQL.
+boolean	supportsCorrelatedSubqueries() - Возвращает (извлекает), поддерживает ли эта база данных
+                                         коррелированные подзапросы.
+boolean	supportsDataDefinitionAndDataManipulationTransactions() - Возвращает (извлекает) информацию о том,
+                                                                  поддерживает ли эта база данных как
+                                                                  определение данных, так и операторы
+                                                                  обработки данных в рамках транзакции.
+boolean	supportsDataManipulationTransactionsOnly() - Возвращает (извлекает), поддерживает ли эта база
+                                                     данных только операторы обработки данных в рамках
+                                                     транзакции.
+boolean	supportsDifferentTableCorrelationNames() - Возвращает (извлекает), ограничивается ли, если имена
+                                                   корреляции таблиц поддерживаются, отличием от имен таблиц.
+boolean	supportsExpressionsInOrderBy() - Возвращает (извлекает), поддерживает ли эта база данных
+                                         выражения в ORDER BY списках.
+boolean	supportsExtendedSQLGrammar() - Возвращает (извлекает) информацию о том, поддерживает ли эта база
+                                       данных грамматику расширенного SQL ODBC.
+boolean	supportsFullOuterJoins() - Возвращает (извлекает), поддерживает ли эта база данных полные
+                                   вложенные внешние соединения.
+boolean	supportsGetGeneratedKeys() - Проверяет, можно ли получить автоматически сгенерированные
+                                     ключи после выполнения инструкции.
+boolean	supportsGroupBy() - Возвращает (извлекает), поддерживает ли эта база данных какую-либо
+                            форму GROUP BY предложения.
+boolean	supportsGroupByBeyondSelect() - Определяет, поддерживает ли эта база данных использование
+                                        столбцов, не включенных в SELECT инструкцию, в предложении
+                                        GROUP BY при условии, что все столбцы в SELECT выражении
+                                        включены в GROUP BY предложение.
+boolean	supportsGroupByUnrelated() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                     база данных использование столбца, которого нет в SELECT
+                                     инструкции в GROUP BY предложении.
+boolean	supportsIntegrityEnhancementFacility() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                                 эта база данных средство улучшения целостности SQL.
+boolean	supportsLikeEscapeClause() - Возвращает (извлекает), поддерживает ли эта база данных
+                                     указание LIKE escape-предложения.
+boolean	supportsLimitedOuterJoins() - Возвращает (извлекает) информацию о том, предоставляет ли эта
+                                      база данных ограниченную поддержку внешних соединений.
+boolean	supportsMinimumSQLGrammar() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                      база данных минимальную грамматику SQL ODBC.
+boolean	supportsMixedCaseIdentifiers() -  Возвращает (извлекает), обрабатывает ли эта база данных
+                                          идентификаторы SQL без кавычек в смешанном регистре как
+                                          чувствительные к регистру и в результате сохраняет их в
+                                          смешанном регистре.
+boolean	supportsMixedCaseQuotedIdentifiers() - Возвращает (извлекает), обрабатывает ли эта база данных
+                                               идентификаторы SQL в кавычках смешанного регистра как
+                                               чувствительные к регистру и в результате сохраняет их
+                                               в смешанном регистре.
+boolean	supportsMultipleOpenResults() - Проверяет, возможно ли одновременное ResultSet возвращение
+                                        нескольких объектов из CallableStatement объекта.
+boolean	supportsMultipleResultSets() - Возвращает (извлекает), поддерживает ли эта база данных получение
+                                       нескольких ResultSet объектов из одного вызова метода execute.
+boolean	supportsMultipleTransactions() - Возвращает (извлекает), позволяет ли эта база данных открывать
+                                         несколько транзакций одновременно (по разным соединениям).
+boolean	supportsNamedParameters() - Возвращает (извлекает), поддерживает ли эта база данных именованные
+                                    параметры для вызываемых операторов.
+boolean	supportsNonNullableColumns() - Возвращает (извлекает), могут ли столбцы в этой базе данных быть
+                                       определены как необнуляемые.
+boolean	supportsOpenCursorsAcrossCommit() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                            база данных сохранение курсоров открытыми при коммитах.
+boolean	supportsOpenCursorsAcrossRollback() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                              эта база данных сохранение курсоров открытыми при откатах.
+boolean	supportsOpenStatementsAcrossCommit() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                               эта база данных сохранение открытых операторов между
+                                               фиксациями.
+boolean	supportsOpenStatementsAcrossRollback() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                                 эта база данных сохранение открытых операторов при откатах.
+boolean	supportsOrderByUnrelated() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                     база данных использование столбца, которого нет в SELECT
+                                     инструкции в ORDER BY предложении.
+boolean	supportsOuterJoins() - Возвращает (извлекает), поддерживает ли эта база данных какую-либо
+                               форму внешнего соединения.
+boolean	supportsPositionedDelete() - Возвращает (извлекает), поддерживает ли эта
+                                     база данных позиционированные DELETE операторы.
+boolean	supportsPositionedUpdate() - Возвращает (извлекает), поддерживает ли эта
+                                     база данных позиционированные UPDATE операторы.
+boolean	supportsResultSetConcurrency(int type,
+                                     int concurrency) - Возвращает (извлекает), поддерживает ли эта
+                                                        база данных данный тип параллелизма в сочетании
+                                                        с данным типом набора результатов.
+boolean	supportsResultSetHoldability(int holdability) - Возвращает (извлекает) информацию о том, поддерживает
+                                                        ли эта база данных заданную удерживаемость набора
+                                                        результатов.
+boolean	supportsResultSetType(int type) - Возвращает (извлекает), поддерживает ли эта
+                                          база данных данный тип набора результатов.
+boolean	supportsSavepoints() - Возвращает (извлекает), поддерживает ли эта база данных точки сохранения.
+boolean	supportsSchemasInDataManipulation() - Возвращает (извлекает) информацию о том, можно ли
+                                              использовать имя схемы в операторе обработки данных.
+boolean	supportsSchemasInIndexDefinitions() - Возвращает (извлекает), может ли имя схемы использоваться
+                                              в операторе определения индекса.
+boolean	supportsSchemasInPrivilegeDefinitions() - Возвращает (извлекает), может ли имя схемы использоваться
+                                                  в операторе определения привилегии.
+boolean	supportsSchemasInProcedureCalls() - Определяет, можно ли использовать имя схемы
+                                            в операторе вызова процедуры.
+boolean	supportsSchemasInTableDefinitions() - Возвращает (извлекает), может ли имя схемы
+                                              использоваться в операторе определения таблицы.
+boolean	supportsSelectForUpdate() - Возвращает (извлекает), поддерживает ли эта база данных
+                                    SELECT FOR UPDATE операторы.
+boolean	supportsStatementPooling() - Возвращает (извлекает), поддерживает ли эта база данных
+                                     объединение инструкций.
+boolean	supportsStoredFunctionsUsingCallSyntax() - Возвращает (извлекает) информацию о том, поддерживает ли
+                                                   эта база данных вызов определяемых пользователем функций
+                                                   или функций поставщика с использованием синтаксиса
+                                                   escape-последовательности хранимой процедуры.
+boolean	supportsStoredProcedures() - Возвращает (извлекает) информацию о том, поддерживает ли эта
+                                     база данных вызовы хранимых процедур, в которых используется
+                                     синтаксис escape-последовательности хранимых процедур.
+boolean	supportsSubqueriesInComparisons() - Возвращает (извлекает), поддерживает ли эта база данных
+                                            подзапросы в выражениях сравнения.
+boolean	supportsSubqueriesInExists() - Возвращает (извлекает), поддерживает ли эта база данных
+                                       подзапросы в EXISTS выражениях.
+boolean	supportsSubqueriesInIns() - Возвращает (извлекает), поддерживает ли эта база данных
+                                    подзапросы в IN выражениях.
+boolean	supportsSubqueriesInQuantifieds() - Возвращает (извлекает), поддерживает ли эта база данных
+                                            подзапросы в количественных выражениях.
+boolean	supportsTableCorrelationNames() - Возвращает (извлекает), поддерживает ли эта база данных
+                                          корреляционные имена таблиц.
+boolean	supportsTransactionIsolationLevel(int level) - Возвращает (извлекает) информацию о том, поддерживает
+                                                       ли эта база данных заданный уровень изоляции транзакций.
+boolean	supportsTransactions() - Возвращает (извлекает), поддерживает ли эта база данных транзакции.
+boolean	supportsUnion() - Возвращает (извлекает), поддерживает ли эта база данных SQL UNION.
+boolean	supportsUnionAll() - Возвращает (извлекает), поддерживает ли эта база данных SQL UNION ALL.
+boolean	updatesAreDetected(int type) - Возвращает (извлекает) информацию о том, можно ли обнаружить видимое
+                                       обновление строки, вызвав метод ResultSet.rowUpdated.
+boolean	usesLocalFilePerTable() - Возвращает (извлекает), использует ли эта база данных файл для каждой таблицы.
+boolean	usesLocalFiles() - Возвращает (извлекает), хранит ли эта база данных таблицы в локальном файле.
+
+*******************************************************************************************************************
+См. более подробную документацию (ENG):
+https://docs.oracle.com/javase/7/docs/api/java/sql/DatabaseMetaData.html
+*******************************************************************************************************************

@@ -1,0 +1,264 @@
+****** Interface Connection ******
+
+Все интерфейсы родители: AutoCloseable, Wrapper
+
+public interface Connection extends Wrapper,
+                                    AutoCloseable
+
+Соединение (сеанс) с определенной базой данных. Операторы SQL
+выполняются, и результаты возвращаются в контексте соединения.
+
+База данных объекта Connection может предоставить информацию,
+описывающую его таблицы, поддерживаемую им грамматику SQL, его
+хранимые процедуры, возможности этого соединения и так далее.
+Эта информация получается с помощью метода getMetaData.
+
+!!! Примечание !!! При настройке подключения приложения JDBC
+должны использовать соответствующий метод подключения, например
+setAutoCommit или setTransactionIsolation. Приложения не должны
+напрямую вызывать команды SQL для изменения конфигурации
+соединения, когда доступен метод JDBC. По умолчанию объект
+Connection находится в режиме автоматической фиксации, что
+означает, что он автоматически фиксирует изменения после
+выполнения каждого оператора. Если режим автоматической фиксации
+отключен, метод фиксации должен вызываться явно, чтобы
+зафиксировать изменения; в противном случае изменения базы данных
+не будут сохранены.
+
+Новый объект Connection, созданный с помощью основного API JDBC 2.1,
+имеет связанную с ним изначально пустую карту типов. Пользователь
+может ввести пользовательское сопоставление для UDT в сопоставлении
+этого типа. Когда UDT извлекается из источника данных с помощью метода
+ResultSet.getObject, метод getObject проверит карту типов соединения,
+чтобы увидеть, есть ли запись для этого UDT. Если это так, метод
+getObject сопоставит UDT с указанным классом. Если записи нет,
+UDT будет сопоставлен с использованием стандартного сопоставления.
+
+Пользователь может создать карту нового типа, которая является объектом
+java.util.Map, сделать в ней запись и передать ее методам java.sql,
+которые могут выполнять пользовательское сопоставление. В этом случае
+метод будет использовать заданную карту типов вместо карты, связанной
+с подключением.
+
+Например, следующий фрагмент кода указывает, что тип SQL ATHLETES
+будет отображаться в класс Athletes в языке программирования Java.
+Фрагмент кода извлекает карту типов для объекта Connection con,
+вставляет в нее запись, а затем устанавливает карту типов с новой
+записью в качестве карты типов соединения.
+
+***********************************************************************
+  java.util.Map map = con.getTypeMap();
+  map.put("mySchemaName.ATHLETES", Class.forName("Athletes"));
+  con.setTypeMap(map);
+***********************************************************************
+
+****** Поля и константы ******
+
+static int TRANSACTION_NONE - Константа, указывающая, что транзакции не поддерживаются.
+
+static int TRANSACTION_READ_COMMITTED - Константа, указывающая, что грязные чтения
+                                        предотвращены; могут возникать неповторяющиеся
+                                        чтения и фантомные чтения.
+
+static int TRANSACTION_READ_UNCOMMITTED - Константа, указывающая, что могут происходить
+                                          грязные чтения, неповторяемые чтения и фантомные
+                                          чтения.
+
+static int TRANSACTION_REPEATABLE_READ - Константа, указывающая, что грязные чтения и
+                                         неповторяющиеся чтения предотвращены; могут
+                                         возникать фантомные чтения.
+
+static int TRANSACTION_SERIALIZABLE - Константа, указывающая, что грязные чтения,
+                                      неповторяющиеся чтения и фантомные чтения
+                                      предотвращены.
+
+****** Методы ******
+
+void abort(Executor executor) - Завершает открытое соединение.
+
+void clearWarnings() - Удаляет все предупреждения, выданные для
+                       этого объекта Connection.
+
+void close() - Немедленно освобождает базу данных этого объекта
+               Connection и ресурсы JDBC вместо ожидания их
+               автоматического освобождения.
+
+void commit() - Делает все изменения, сделанные с момента предыдущей
+                фиксации/отката, постоянными и освобождает все блокировки
+                базы данных, которые в настоящее время удерживаются этим
+                Объект соединения.
+
+Array createArrayOf(String typeName, Object[] elements) - Фабричный метод
+                для создания объектов массива.
+
+Blob createBlob() - Создает объект, реализующий интерфейс Blob.
+
+Clob createClob() - Создает объект, реализующий интерфейс Clob.
+
+NClob createNClob() - Создает объект, реализующий интерфейс NClob.
+
+SQLXML createSQLXML() - Создает объект, реализующий интерфейс SQLXML.
+
+Statement createStatement() - Создает объект Statement для отправки операторов
+                              SQL в базу данных.
+
+Statement createStatement(int resultSetType,
+                          int resultSetConcurrency) - Создает объект Statement,
+                          который будет генерировать объекты ResultSet с заданным
+                          типом и параллелизмом.
+
+Statement createStatement(int resultSetType,
+                          int resultSetConcurrency,
+                          int resultSetHoldability) - Создает объект Statement,
+                          который будет генерировать объекты ResultSet с заданным
+                          типом, параллелизмом и возможностью удержания.
+
+Struct createStruct(String typeName, Object[] attributes) - Фабричный метод для
+                                                            создания объектов Struct.
+
+boolean	getAutoCommit() - Извлекает текущий режим автоматической фиксации для
+                          этого объекта Connection.
+
+String getCatalog() - Извлекает текущее имя каталога этого объекта Connection.
+
+Properties getClientInfo() - Возвращает список, содержащий имя и текущее значение
+                             каждого свойства сведений о клиенте, поддерживаемого
+                             драйвером.
+
+String getClientInfo(String name) - Возвращает значение свойства информации о клиенте,
+                                    указанное по имени.
+
+int getHoldability() - Извлекает текущую возможность удержания объектов ResultSet,
+                       созданных с использованием этого объекта Connection.
+
+DatabaseMetaData getMetaData() - Извлекает объект DatabaseMetaData, содержащий
+                                 метаданные о базе данных, к которой этот объект
+                                 Connection представляет соединение.
+
+int getNetworkTimeout() - Получает количество миллисекунд, в течение которых
+                          драйвер будет ожидать завершения запроса к базе данных.
+
+String getSchema() - Извлекает имя текущей схемы этого объекта Connection.
+
+int getTransactionIsolation() - Извлекает текущий уровень изоляции транзакции этого
+                                объекта Connection.
+
+Map<String,Class<?>> getTypeMap() - Извлекает объект Map, связанный с этим
+                                    объектом Connection.
+
+SQLWarning getWarnings() - Извлекает первое предупреждение, о котором сообщают вызовы
+                           этого объекта Connection.
+
+boolean	isClosed() - Получает, был ли закрыт этот объект Connection.
+
+boolean	isReadOnly() - Получает, находится ли этот объект Connection в режиме только
+                       для чтения.
+
+boolean isValid(int timeout) - Возвращает true, если соединение не было закрыто и
+                               все еще действует.
+
+String nativeSQL(String sql) - Преобразует данный оператор SQL в собственную грамматику
+                               SQL системы.
+
+CallableStatement prepareCall(String sql) - Создает объект CallableStatement для вызова
+                                            хранимых процедур базы данных.
+
+CallableStatement prepareCall(String sql,
+                              int resultSetType,
+                              int resultSetConcurrency) - Создает объект CallableStatement,
+                              который будет генерировать объекты ResultSet с заданным типом
+                              и параллелизмом.
+
+CallableStatement prepareCall(String sql,
+                              int resultSetType,
+                              int resultSetConcurrency,
+                              int resultSetHoldability) - Создает объект CallableStatement,
+                              который будет генерировать объекты ResultSet с заданным типом
+                              и параллелизмом.
+
+PreparedStatement prepareStatement(String sql) - Создает объект PreparedStatement для
+                                                 отправки параметризованных операторов
+                                                 SQL в базу данных.
+
+PreparedStatement prepareStatement(String sql,
+                                   int autoGeneratedKeys) - Создает объект PreparedStatement
+                                   по умолчанию, который имеет возможность извлекать автоматически
+                                   сгенерированные ключи.
+
+PreparedStatement prepareStatement(String sql,
+                                   int[] columnIndexes) - Создает объект PreparedStatement по
+                                   умолчанию, способный возвращать автоматически сгенерированные
+                                   ключи, указанные данным массивом.
+
+PreparedStatement prepareStatement(String sql,
+                                   int resultSetType,
+                                   int resultSetConcurrency) - Создает объект PreparedStatement,
+                                   который будет генерировать объекты ResultSet с заданным типом
+                                   и параллелизмом.
+
+PreparedStatement prepareStatement(String sql,
+                                   int resultSetType,
+                                   int resultSetConcurrency,
+                                   int resultSetHoldability) - Создает объект PreparedStatement,
+                                   который будет генерировать объекты ResultSet с заданным типом,
+                                   параллелизмом и возможностью удержания.
+
+PreparedStatement prepareStatement(String sql,
+                                   String[] columnNames) - Создает объект PreparedStatement по
+                                   умолчанию, способный возвращать автоматически сгенерированные
+                                   ключи, указанные данным массивом.
+
+void releaseSavepoint(Savepoint savepoint) - Удаляет указанную точку сохранения и последующие
+                                             объекты точки сохранения из текущей транзакции.
+
+void rollback() - Отменяет все изменения, внесенные в текущую транзакцию, и освобождает все
+                  блокировки базы данных, удерживаемые в настоящее время этим объектом
+                  Connection.
+
+void rollback(Savepoint savepoint) - Отменяет все изменения, сделанные после установки данного
+                                     объекта точки сохранения.
+
+void setAutoCommit(boolean autoCommit) - Устанавливает режим автоматической фиксации этого
+                                         соединения в заданное состояние.
+
+void setCatalog(String catalog) - Устанавливает имя каталога, чтобы выбрать подпространство
+                                  для работы. База данных объекта соединения, в которой нужно
+                                  работать.
+
+void setClientInfo(Properties properties) - Задает значение свойств информации о
+                                            клиенте соединения.
+
+void setClientInfo(String name,
+                   String value) - Устанавливает значение свойства информации о клиенте,
+                                   указанного по имени, равным значению, указанному по
+                                   значению.
+
+void setHoldability(int holdability) - Изменяет удерживаемость по умолчанию объектов ResultSet,
+                                       созданных с использованием этого объекта Connection,
+                                       на заданную удерживаемость.
+
+void setNetworkTimeout(Executor executor,
+                       int milliseconds) - Устанавливает максимальный период, в течение которого
+                                           Connection или объекты, созданные из Connection, будут
+                                           ожидать ответа базы данных на любой запрос.
+
+void setReadOnly(boolean readOnly) - Переводит это соединение в режим только для чтения в качестве
+                                     подсказки драйверу для включения оптимизации базы данных.
+
+Savepoint setSavepoint() - Создает безымянную точку сохранения в текущей транзакции и возвращает
+                           новый объект точки сохранения, представляющий ее.
+
+Savepoint setSavepoint(String name) - Создает точку сохранения с заданным именем в текущей транзакции
+                                      и возвращает новый объект точки сохранения, представляющий ее.
+
+void setSchema(String schema) - Устанавливает данное имя схемы для доступа.
+
+void setTransactionIsolation(int level) - Пытается изменить уровень изоляции транзакции для данного
+                                          объекта Connection на заданный.
+
+void setTypeMap(Map<String,Class<?>> map) - Устанавливает данный объект TypeMap в качестве карты типов
+                                            для этого объекта Connection.
+
+См. более подробно документация (ENG):
+https://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html
+

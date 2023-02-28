@@ -1,0 +1,97 @@
+****** Class DriverManager ******
+
+public class DriverManager extends Object
+
+Базовая служба для управления набором драйверов JDBC.
+
+ПРИМЕЧАНИЕ. Интерфейс DataSource, новый в JDBC 2.0 API, предоставляет
+еще один способ подключения к источнику данных. Использование объекта
+DataSource является предпочтительным способом подключения к источнику
+данных.
+
+В рамках своей инициализации класс DriverManager попытается загрузить
+классы драйверов, указанные в системном свойстве jdbc.drivers. Это
+позволяет пользователю настраивать драйверы JDBC, используемые их
+приложениями.
+
+Например, в вашем файле ~/.hotjava/properties вы можете указать:
+
+jdbc.drivers=foo.bah.Driver:wombat.sql.Driver:bad.taste.ourDriver
+
+Методы DriverManager getConnection и getDrivers были улучшены для поддержки
+механизма поставщика услуг Java Standard Edition. Драйверы JDBC 4.0 должны
+включать файл META-INF/services/java.sql.Driver. Этот файл содержит имя
+реализации JDBC-драйверов java.sql.Driver.
+
+Например, чтобы загрузить класс my.sql.Driver, файл
+META-INF/services/java.sql.Driver должен содержать
+запись: my.sql.Driver
+
+Приложениям больше не нужно явно загружать драйверы JDBC с помощью
+Class.forName(). Существующие программы, которые в настоящее время
+загружают драйверы JDBC с помощью Class.forName(), будут продолжать
+работать без изменений.
+
+При вызове метода getConnection DriverManager попытается найти подходящий
+драйвер среди тех, которые загружаются при инициализации, и тех, которые
+загружаются явно с использованием того же загрузчика классов, что и текущий
+апплет или приложение.
+
+Начиная с Java 2 SDK, Standard Edition, версии 1.3, поток ведения журнала
+можно задать только в том случае, если было предоставлено соответствующее
+разрешение. Обычно это делается с помощью инструмента PolicyTool, который
+можно использовать для предоставления разрешения java.sql.SQLPermission
+"setLog".
+
+****** Методы ******
+
+static void deregisterDriver(Driver driver) - Удаляет указанный драйвер из списка
+                                              зарегистрированных драйверов DriverManager.
+
+static Connection getConnection(String url) - Пытается установить соединение с заданным
+                                              URL-адресом базы данных.
+
+static Connection getConnection(String url,
+                                Properties info) - Пытается установить соединение с заданным
+                                                   URL-адресом базы данных.
+
+static Connection getConnection(String url,
+                                String user,
+                                String password) - Пытается установить соединение с заданным
+                                                   URL-адресом базы данных.
+
+static Driver getDriver(String url) - Пытается найти драйвер, который понимает данный URL-адрес.
+
+static Enumeration<Driver> getDrivers() - Извлекает перечисление со всеми загруженными в данный
+                                          момент драйверами JDBC, к которым у текущего вызывающего
+                                          объекта есть доступ.
+
+static int getLoginTimeout() - Получает максимальное время в секундах, которое драйвер может ждать
+                               при попытке входа в базу данных.
+
+static PrintStream getLogStream() - Устарело - не рекомендуется к использованию.
+                                    Используйте getLogWriter
+
+static PrintWriter getLogWriter() - Получает средство записи журнала.
+
+static void println(String message) - Печатает сообщение в текущий поток журнала JDBC.
+
+static void	registerDriver(Driver driver) - Регистрирует данный драйвер в DriverManager.
+
+static void	registerDriver(Driver driver, DriverAction da) - Регистрирует данный драйвер
+                                                             в DriverManager.
+
+static void	setLoginTimeout(int seconds) - Устанавливает максимальное время в секундах,
+                                           которое драйвер будет ожидать при попытке
+                                           подключения к базе данных после идентификации
+                                           драйвера.
+
+static void	setLogStream(PrintStream out) - Устарело - не рекомендуется к использованию.
+                                            Используйте setLogWriter
+
+static void	setLogWriter(PrintWriter out) - Задает объект PrintWriter для регистрации и
+                                            отслеживания, который используется DriverManager
+                                            и всеми драйверами.
+
+См. полную документацию (ENG):
+https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html

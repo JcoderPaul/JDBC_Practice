@@ -1,0 +1,816 @@
+****** Interface ResultSet ******
+
+public interface ResultSet extends Wrapper,
+                                   AutoCloseable
+
+Все суперинтерфейсы: AutoCloseable, Wrapper
+Все известные субинтерфейсы: CachedRowSet, FilteredRowSet, JdbcRowSet,
+                             JoinRowSet, RowSet, SyncResolver, WebRowSet
+
+Таблица данных, представляющая набор результатов базы данных, которая
+обычно создается путем выполнения оператора, который запрашивает базу
+данных. Объект ResultSet поддерживает курсор, указывающий на его текущую
+строку данных. Первоначально курсор находится перед первой строкой.
+
+Метод next перемещает курсор на следующую строку, и, поскольку он
+возвращает false, когда в объекте ResultSet больше нет строк, его
+можно использовать в цикле while для перебора результирующего набора.
+
+Объект ResultSet по умолчанию не подлежит обновлению и имеет курсор,
+который перемещается только вперед. Таким образом, вы можете перебрать
+его только один раз и только от первой строки до последней строки.
+Можно создавать объекты ResultSet, которые можно прокручивать и/или
+обновлять. Следующий фрагмент кода, в котором 'con' является допустимым
+объектом Connection, иллюстрирует, как сделать результирующий набор
+с возможностью прокрутки, нечувствительным к обновлениям другими
+и обновляемым. См. поля ResultSet для других параметров.
+
+****************************************************************************
+ Statement stmt = con.createStatement(
+                                      ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                      ResultSet.CONCUR_UPDATABLE);
+ ResultSet rs = stmt.executeQuery("SELECT a, b FROM TABLE2");
+ // rs будет прокручиваться, не будет показывать изменения, сделанные другими,
+ // и будет обновляться
+****************************************************************************
+
+Интерфейс ResultSet предоставляет методы получения (getBoolean, getLong
+и т. д.) для извлечения значений столбца из текущей строки. Значения можно
+получить, используя либо порядковый номер столбца, либо имя столбца.
+В общем, использование индекса столбца будет более эффективным. Столбцы
+нумеруются от 1. Для максимальной переносимости столбцы результирующего
+набора в каждой строке следует читать слева направо, а каждый столбец
+следует читать только один раз.
+
+Для методов получения данных, драйвер JDBC пытается преобразовать базовые
+данные в тип Java, указанный в методе получения, и возвращает подходящее
+значение Java. В спецификации JDBC есть таблица, показывающая допустимые
+сопоставления типов SQL с типами Java, которые могут использоваться
+методами получения ResultSet.
+
+Имена столбцов, используемые в качестве входных данных для методов получения,
+нечувствительны к регистру. Когда метод получения вызывается с именем столбца,
+а несколько столбцов имеют одно и то же имя, будет возвращено значение первого
+совпадающего столбца. Опция имени столбца предназначена для использования,
+когда имена столбцов используются в SQL-запросе, создавшем результирующий набор.
+Для столбцов, имена которых НЕ указаны в запросе явно, лучше всего использовать
+номера столбцов. Если используются имена столбцов, программист должен позаботиться
+о том, чтобы они однозначно ссылались на предполагаемые столбцы, что может быть
+обеспечено с помощью предложения SQL AS.
+
+Набор методов обновления был добавлен в этот интерфейс в JDBC 2.0 API (JavaTM 2 SDK,
+Standard Edition, версия 1.2). Комментарии относительно параметров методов
+получения также относятся к параметрам методов обновления.
+
+Методы обновления можно использовать двумя способами:
+
+1. Для обновления значения столбца в текущей строке. В прокручиваемом объекте
+   ResultSet курсор можно перемещать назад и вперед, в абсолютную позицию или
+   в позицию относительно текущей строки. Следующий фрагмент кода обновляет
+   столбец NAME в пятой строке объекта 'rs' ResultSet, а затем использует метод
+   updateRow для обновления таблицы источника данных, из которой был получен 'rs'.
+
+****************************************************************************
+    // перемещает курсор на пятую строку rs
+rs.absolute(5);
+    // обновляет столбец NAME строки 5 на AINSWORTH
+rs.updateString("NAME", "AINSWORTH");
+    // обновляет строку в источнике данных
+rs.updateRow();
+****************************************************************************
+
+2. Чтобы вставить значения столбца в строку вставки. Обновляемый объект
+   ResultSet имеет связанную с ним специальную строку, которая служит
+   промежуточной областью для построения вставляемой строки. Следующий
+   фрагмент кода перемещает курсор на строку вставки, строит строку из
+   трех столбцов и вставляет ее в 'rs' и в таблицу источника данных с
+   помощью метода 'insertRow'.
+
+****************************************************************************
+    // перемещает курсор на вставляемую строку
+rs.moveToInsertRow();
+    // обновляет первый столбец вставляемой строки на AINSWORTH
+rs.updateString(1, "AINSWORTH");
+    // обновляет второй столбец до 35
+rs.updateInt(2,35);
+    // обновляет третий столбец до true
+rs.updateBoolean(3, true);
+rs.insertRow();
+rs.moveToCurrentRow();
+****************************************************************************
+
+Объект ResultSet автоматически закрывается, когда сгенерировавший его объект
+Statement закрывается, повторно выполняется или используется для извлечения
+следующего результата из последовательности нескольких результатов.
+
+Количество, типы и свойства столбцов объекта ResultSet предоставляются объектом
+ResultSetMetaData, возвращаемым методом ResultSet.getMetaData.
+
+****** Константы ******
+
+static int CLOSE_CURSORS_AT_COMMIT - Константа, указывающая, что открытые объекты ResultSet
+                                     с этой возможностью удержания будут закрыты, когда текущая
+                                     транзакция будет зафиксирована.
+
+static int CONCUR_READ_ONLY - Константа, указывающая режим параллелизма для объекта ResultSet,
+                              который НЕ может быть обновлен.
+
+static int CONCUR_UPDATABLE - Константа, указывающая режим параллелизма для объекта ResultSet,
+                              который может быть обновлен.
+
+static int FETCH_FORWARD - Константа, указывающая, что строки результирующего набора будут
+                           обрабатываться в прямом направлении; первый-последний.
+
+static int FETCH_REVERSE - Константа, указывающая, что строки результирующего набора будут
+                           обрабатываться в обратном направлении; последний к первому.
+
+static int FETCH_UNKNOWN - Константа, указывающая, что порядок, в котором будут обрабатываться
+                           строки в наборе результатов, неизвестен.
+
+static int HOLD_CURSORS_OVER_COMMIT - Константа, указывающая, что открытые объекты ResultSet с
+                                      этой удерживаемостью останутся открытыми, когда текущая
+                                      транзакция будет зафиксирована.
+
+static int TYPE_FORWARD_ONLY - Константа, указывающая тип объекта ResultSet, курсор которого
+                               может перемещаться только вперед.
+
+static int TYPE_SCROLL_INSENSITIVE - Константа, указывающая тип объекта ResultSet, который
+                                     можно прокручивать, но обычно не чувствителен к изменениям
+                                     данных, лежащих в основе ResultSet.
+
+static int TYPE_SCROLL_SENSITIVE - Константа, указывающая тип объекта ResultSet, который можно
+                                   прокручивать и обычно чувствителен к изменениям данных,
+                                   лежащих в основе ResultSet.
+
+****** Методы ******
+
+boolean	absolute(int row) - Перемещает курсор к заданному номеру строки
+                            в этом объекте ResultSet.
+
+void afterLast() - Перемещает курсор в конец этого объекта ResultSet сразу
+                   после последней строки.
+
+void beforeFirst() - Перемещает курсор в начало этого объекта ResultSet,
+                     непосредственно перед первой строкой.
+
+void cancelRowUpdates() - Отменяет обновления, сделанные для текущей строки
+                          в этом объекте ResultSet.
+
+void clearWarnings() - Удаляет все предупреждения, выданные для этого
+                       объекта ResultSet.
+
+void close() - Немедленно освобождает базу данных этого объекта ResultSet и
+               ресурсы JDBC вместо того, чтобы ждать, пока это произойдет,
+               когда он будет автоматически закрыт.
+
+void deleteRow() - Удаляет текущую строку из этого объекта ResultSet и из
+                   базовой базы данных.
+
+int findColumn(String columnLabel) - Сопоставляет заданную метку столбца
+                                     ResultSet с его индексом столбца
+                                     ResultSet.
+
+boolean first() - Перемещает курсор в первую строку в этом объекте ResultSet.
+
+Array getArray(int columnIndex) - Извлекает значение указанного столбца в текущей
+                                  строке этого объекта ResultSet в виде объекта
+                                  Array на языке программирования Java.
+
+Array getArray(String columnLabel) - Извлекает значение указанного столбца в текущей
+                                     строке этого объекта ResultSet в виде объекта
+                                     Array на языке программирования Java.
+
+InputStream getAsciiStream(int columnIndex) - Извлекает значение указанного столбца в
+                                              текущей строке этого объекта ResultSet в
+                                              виде потока символов ASCII.
+
+InputStream getAsciiStream(String columnLabel) - Извлекает значение указанного столбца в
+                                                 текущей строке этого объекта ResultSet
+                                                 в виде потока символов ASCII.
+
+BigDecimal getBigDecimal(int columnIndex) - Извлекает значение назначенного столбца в
+                                            текущей строке этого объекта ResultSet как
+                                            java.math.BigDecimal с полной точностью.
+
+BigDecimal getBigDecimal(int columnIndex, int scale) - Устарело.
+
+BigDecimal getBigDecimal(String columnLabel) - Извлекает значение назначенного столбца в
+                                               текущей строке этого объекта ResultSet как
+                                               java.math.BigDecimal с полной точностью.
+
+BigDecimal getBigDecimal(String columnLabel, int scale) - Устарело.
+
+InputStream getBinaryStream(int columnIndex) - Извлекает значение указанного столбца в текущей
+                                               строке этого объекта ResultSet в виде потока
+                                               неинтерпретированных байтов.
+
+InputStream getBinaryStream(String columnLabel) - Извлекает значение указанного столбца в текущей
+                                                  строке этого объекта ResultSet в виде потока
+                                                  неинтерпретированных байтов.
+
+Blob getBlob(int columnIndex) - Извлекает значение указанного столбца в текущей строке этого объекта
+                                ResultSet в виде объекта Blob на языке программирования Java.
+
+Blob getBlob(String columnLabel) - Извлекает значение указанного столбца в текущей строке этого
+                                   объекта ResultSet в виде объекта Blob на языке программирования
+                                   Java.
+
+boolean getBoolean(int columnIndex) - Извлекает значение указанного столбца в текущей
+                                      строке этого объекта ResultSet как логическое
+                                      значение на языке программирования Java.
+
+boolean getBoolean(String columnLabel) - Извлекает значение указанного столбца в текущей
+                                         строке этого объекта ResultSet как логическое
+                                         значение на языке программирования Java.
+
+byte getByte(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                этого объекта ResultSet в виде байта на языке
+                                программирования Java.
+
+byte getByte(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                   этого объекта ResultSet в виде байта на языке
+                                   программирования Java.
+
+byte[] getBytes(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                   этого объекта ResultSet в виде массива байтов на языке
+                                   программирования Java.
+
+byte[] getBytes(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                      этого объекта ResultSet в виде массива байтов на языке
+                                      программирования Java.
+
+Reader getCharacterStream(int columnIndex) - Извлекает значение назначенного столбца в текущей
+                                             строке этого объекта ResultSet как объект
+                                             java.io.Reader.
+
+Reader getCharacterStream(String columnLabel) - Извлекает значение назначенного столбца в текущей
+                                                строке этого объекта ResultSet как объект
+                                                java.io.Reader.
+
+Clob getClob(int columnIndex) - Извлекает значение назначенного столбца в текущей строке этого
+                                объекта ResultSet как объект Clob на языке программирования Java.
+
+Clob getClob(String columnLabel) - Извлекает значение назначенного столбца в текущей строке
+                                   этого объекта ResultSet как объект Clob на языке
+                                   программирования Java.
+
+int getConcurrency() - Извлекает режим параллелизма этого объекта ResultSet.
+
+String getCursorName() - Извлекает имя курсора SQL, используемого этим объектом ResultSet.
+
+Date getDate(int columnIndex) - Извлекает значение указанного столбца в текущей строке этого
+                                объекта ResultSet в виде объекта java.sql.Date на языке
+                                программирования Java.
+
+Date getDate(int columnIndex,
+             Calendar cal) - Извлекает значение указанного столбца в текущей строке этого
+                             объекта ResultSet в виде объекта java.sql.Date на языке
+                             программирования Java.
+
+Date getDate(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                   этого объекта ResultSet в виде объекта java.sql.Date
+                                   на языке программирования Java.
+
+Date getDate(String columnLabel,
+             Calendar cal) - Извлекает значение указанного столбца в текущей строке этого
+                             объекта ResultSet в виде объекта java.sql.Date на языке
+                             программирования Java.
+
+double getDouble(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                    этого объекта ResultSet как двойное значение на языке
+                                    программирования Java.
+
+double getDouble(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                       этого объекта ResultSet как двойное значение на языке
+                                       программирования Java.
+
+int getFetchDirection() - Извлекает направление выборки для этого объекта ResultSet.
+
+int getFetchSize() - Получает размер выборки для этого объекта ResultSet.
+
+float getFloat(int columnIndex) - Извлекает значение указанного столбца в текущей строке этого
+                                  объекта ResultSet в виде числа с плавающей запятой на языке
+                                  программирования Java.
+
+float getFloat(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                     этого объекта ResultSet в виде числа с плавающей запятой
+                                     на языке программирования Java.
+
+int getHoldability() - Получает удерживаемость этого объекта ResultSet
+
+int getInt(int columnIndex) - Извлекает значение назначенного столбца в текущей строке
+                              этого объекта ResultSet как целое число на языке
+                              программирования Java.
+
+int getInt(String columnLabel) - Извлекает значение назначенного столбца в текущей строке
+                                 этого объекта ResultSet как целое число на языке
+                                 программирования Java.
+
+long getLong(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                этого объекта ResultSet как long на языке
+                                программирования Java.
+
+long getLong(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                   этого объекта ResultSet как long на языке
+                                   программирования Java.
+
+ResultSetMetaData getMetaData() - Извлекает количество, типы и свойства столбцов этого
+                                  объекта ResultSet.
+
+Reader getNCharacterStream(int columnIndex) - Извлекает значение назначенного столбца в
+                                              текущей строке этого объекта ResultSet как
+                                              объект java.io.Reader.
+
+Reader getNCharacterStream(String columnLabel) - Извлекает значение назначенного столбца в
+                                                 текущей строке этого объекта ResultSet как
+                                                 объект java.io.Reader.
+
+NClob getNClob(int columnIndex) - Извлекает значение назначенного столбца в текущей строке
+                                  этого объекта ResultSet как объект NClob на языке
+                                  программирования Java.
+
+NClob getNClob(String columnLabel) - Извлекает значение назначенного столбца в текущей строке
+                                     этого объекта ResultSet как объект NClob на языке
+                                     программирования Java.
+
+String getNString(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                     этого объекта ResultSet в виде строки на языке
+                                     программирования Java.
+
+String getNString(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                        этого объекта ResultSet в виде строки на языке
+                                        программирования Java.
+
+Object getObject(int columnIndex) - Получает значение указанного столбца в текущей строке этого
+                                    объекта ResultSet как объект на языке программирования Java.
+
+<T> T getObject(int columnIndex,
+                Class<T> type) - Извлекает значение назначенного столбца в текущей строке этого
+                                 объекта ResultSet и преобразует тип SQL столбца в запрошенный
+                                 тип данных Java, если преобразование поддерживается.
+
+Object getObject(int columnIndex,
+                 Map<String,Class<?>> map) - Извлекает значение назначенного столбца в текущей
+                                             строке этого объекта ResultSet как объект на языке
+                                             программирования Java.
+
+Object getObject(String columnLabel) - Получает значение указанного столбца в текущей строке этого
+                                       объекта ResultSet как объект на языке программирования Java.
+
+<T> T getObject(String columnLabel,
+                Class<T> type) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                 ResultSet и преобразует тип SQL столбца в запрошенный тип данных Java,
+                                 если преобразование поддерживается.
+
+Object getObject(String columnLabel,
+                 Map<String,Class<?>> map) - Извлекает значение назначенного столбца в текущей строке этого
+                                             объекта ResultSet как объект на языке программирования Java.
+
+Ref getRef(int columnIndex) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                              ResultSet как объект Ref на языке программирования Java.
+
+Ref getRef(String columnLabel) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                 ResultSet как объект Ref на языке программирования Java.
+
+int getRow() - Получает номер текущей строки.
+
+RowId getRowId(int columnIndex) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                  ResultSet в виде объекта java.sql.RowId на языке программирования Java.
+
+RowId getRowId(String columnLabel) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                     ResultSet в виде объекта java.sql.RowId на языке программирования Java.
+
+short getShort(int columnIndex) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                  ResultSet как сокращение на языке программирования Java.
+
+short getShort(String columnLabel) - Извлекает значение назначенного столбца в текущей строке этого объекта
+                                     ResultSet как сокращение на языке программирования Java.
+
+SQLXML getSQLXML(int columnIndex) - Извлекает значение назначенного столбца в текущей
+                                    строке этого ResultSet как объект java.sql.SQLXML
+                                    на языке программирования Java.
+
+SQLXML getSQLXML(String columnLabel) - Извлекает значение назначенного столбца в текущей
+                                       строке этого ResultSet как объект java.sql.SQLXML
+                                       на языке программирования Java.
+
+Statement getStatement() - Извлекает объект Statement, создавший этот объект ResultSet.
+
+String getString(int columnIndex) - Извлекает значение указанного столбца в текущей строке
+                                    этого объекта ResultSet в виде строки на языке
+                                    программирования Java.
+
+String getString(String columnLabel) - Извлекает значение указанного столбца в текущей строке
+                                       этого объекта ResultSet в виде строки на языке
+                                       программирования Java.
+
+Time getTime(int columnIndex) - Извлекает значение указанного столбца в текущей строке этого
+                                объекта ResultSet в виде объекта java.sql.Time на языке
+                                программирования Java.
+
+Time getTime(int columnIndex,
+             Calendar cal) - Извлекает значение указанного столбца в текущей строке этого объекта
+                             ResultSet в виде объекта java.sql.Time на языке программирования Java.
+
+Time getTime(String columnLabel) - Извлекает значение указанного столбца в текущей строке этого
+                                   объекта ResultSet в виде объекта java.sql.Time на языке
+                                   программирования Java.
+
+Time getTime(String columnLabel,
+             Calendar cal) - Извлекает значение указанного столбца в текущей строке этого объекта
+                             ResultSet в виде объекта java.sql.Time на языке программирования Java.
+
+Timestamp getTimestamp(int columnIndex) - Извлекает значение назначенного столбца в текущей строке
+                                          этого объекта ResultSet в виде объекта java.sql.Timestamp
+                                          на языке программирования Java.
+
+Timestamp getTimestamp(int columnIndex,
+                       Calendar cal) - Извлекает значение назначенного столбца в текущей строке этого
+                                       объекта ResultSet в виде объекта java.sql.Timestamp на языке
+                                       программирования Java.
+
+Timestamp getTimestamp(String columnLabel) - Извлекает значение назначенного столбца в текущей строке
+                                             этого объекта ResultSet в виде объекта java.sql.Timestamp
+                                             на языке программирования Java.
+
+Timestamp getTimestamp(String columnLabel,
+                       Calendar cal) - Извлекает значение назначенного столбца в текущей строке этого
+                                       объекта ResultSet в виде объекта java.sql.Timestamp на языке
+                                       программирования Java.
+
+int	getType() - Извлекает тип этого объекта ResultSet.
+
+InputStream getUnicodeStream(int columnIndex) - Устарело, используйте getCharacterStream вместо
+                                                getUnicodeStream
+
+InputStream getUnicodeStream(String columnLabel) - Устарело, вместо этого используйте
+                                                   getCharacterStream
+
+URL getURL(int columnIndex) - Извлекает значение указанного столбца в текущей строке этого объекта
+                              ResultSet в виде объекта java.net.URL на языке программирования Java.
+
+URL getURL(String columnLabel) - Извлекает значение указанного столбца в текущей строке этого объекта
+                                 ResultSet в виде объекта java.net.URL на языке программирования Java.
+
+SQLWarning getWarnings() - Извлекает первое предупреждение, о котором сообщают вызовы этого
+                           объекта ResultSet.
+
+void insertRow() - Вставляет содержимое вставляемой строки в этот
+                   объект ResultSet и в базу данных.
+
+boolean isAfterLast() - Возвращает, находится ли курсор после последней
+                        строки в этом объекте ResultSet.
+
+boolean isBeforeFirst() - Возвращает, находится ли курсор перед первой
+                          строкой в этом объекте ResultSet.
+
+boolean isClosed() - Возвращает, был ли этот объект ResultSet закрыт.
+
+boolean isFirst() - Возвращает, находится ли курсор в первой строке
+                    этого объекта ResultSet.
+
+boolean isLast() - Возвращает, находится ли курсор в последней строке
+                   этого объекта ResultSet.
+
+boolean last() - Перемещает курсор в последнюю строку в этом
+                 объекте ResultSet.
+
+void moveToCurrentRow() - Перемещает курсор в запомненную позицию курсора,
+                          обычно в текущую строку.
+
+void moveToInsertRow() - Перемещает курсор на вставляемую строку.
+
+boolean next() - Перемещает курсор на одну строку вперед от его
+                 текущей позиции.
+
+boolean previous() - Перемещает курсор на предыдущую строку в этом
+                     объекте ResultSet.
+
+void refreshRow() - Обновляет текущую строку ее самым последним
+                    значением в базе данных.
+
+boolean relative(int rows) - Перемещает курсор на относительное число
+                             строк, положительное или отрицательное.
+
+boolean rowDeleted() - Возвращает, была ли удалена строка.
+
+boolean rowInserted() - Возвращает, была ли вставка в текущей строке.
+
+boolean rowUpdated() - Возвращает, была ли обновлена текущая строка.
+
+void setFetchDirection(int direction) - Дает подсказку относительно направления,
+                                        в котором будут обрабатываться строки в
+                                        этом объекте ResultSet.
+
+void setFetchSize(int rows) - Дает драйверу JDBC подсказку о количестве строк, которые
+                              должны быть извлечены из базы данных, когда для этого
+                              объекта ResultSet требуется больше строк.
+
+void updateArray(int columnIndex, Array x) - Обновляет указанный столбец
+                                             значением java.sql.Array.
+
+void updateArray(String columnLabel, Array x) - Обновляет указанный столбец
+                                                значением java.sql.Array.
+
+void updateAsciiStream(int columnIndex,
+                       InputStream x) - Обновляет назначенный столбец значением потока ascii.
+
+void updateAsciiStream(int columnIndex,
+                       InputStream x,
+                       int length) - Обновляет назначенный столбец значением потока ascii,
+                                     которое будет иметь указанное количество байтов.
+
+void updateAsciiStream(int columnIndex,
+                       InputStream x,
+                       long length) - Обновляет назначенный столбец значением потока ascii,
+                                      которое будет иметь указанное количество байтов.
+
+void updateAsciiStream(String columnLabel,
+                       InputStream x) - Обновляет назначенный столбец значением потока ascii.
+
+void updateAsciiStream(String columnLabel,
+                       InputStream x,
+                       int length) - Обновляет назначенный столбец значением потока ascii,
+                                     которое будет иметь указанное количество байтов.
+
+void updateAsciiStream(String columnLabel,
+                       InputStream x,
+                       long length) - Обновляет назначенный столбец значением потока ascii,
+                                      которое будет иметь указанное количество байтов.
+
+void updateBigDecimal(int columnIndex,
+                      BigDecimal x) - Обновляет назначенный столбец значением java.math.BigDecimal.
+
+void updateBigDecimal(String columnLabel,
+                      BigDecimal x) - Обновляет назначенный столбец значением java.sql.BigDecimal.
+
+void updateBinaryStream(int columnIndex,
+                        InputStream x) - Обновляет указанный столбец значением двоичного потока.
+
+void updateBinaryStream(int columnIndex,
+                        InputStream x,
+                        int length) - Обновляет назначенный столбец значением двоичного потока,
+                                      который будет иметь указанное количество байтов.
+
+void updateBinaryStream(int columnIndex,
+                        InputStream x,
+                        long length) - Обновляет назначенный столбец значением двоичного потока,
+                                       который будет иметь указанное количество байтов.
+
+void updateBinaryStream(String columnLabel,
+                        InputStream x) - Обновляет указанный столбец значением двоичного потока.
+
+void updateBinaryStream(String columnLabel,
+                        InputStream x,
+                        int length) - Обновляет назначенный столбец значением двоичного потока,
+                                      который будет иметь указанное количество байтов.
+
+void updateBinaryStream(String columnLabel,
+                        InputStream x,
+                        long length) - Обновляет назначенный столбец значением двоичного потока,
+                                       который будет иметь указанное количество байтов.
+
+void updateBlob(int columnIndex,
+                Blob x) - Обновляет указанный столбец значением java.sql.Blob.
+
+void updateBlob(int columnIndex,
+                InputStream inputStream) - Обновляет указанный столбец, используя заданный входной поток.
+
+void updateBlob(int columnIndex,
+                InputStream inputStream,
+                long length) - Обновляет назначенный столбец, используя заданный входной поток,
+                               который будет иметь указанное количество байтов.
+
+void updateBlob(String columnLabel,
+                Blob x) - Обновляет указанный столбец значением java.sql.Blob.
+
+void updateBlob(String columnLabel,
+                InputStream inputStream) - Обновляет указанный столбец, используя заданный входной поток.
+
+void updateBlob(String columnLabel,
+                InputStream inputStream,
+                long length) - Обновляет назначенный столбец, используя заданный входной поток,
+                               который будет иметь указанное количество байтов.
+
+void updateBoolean(int columnIndex,
+                   boolean x) - Обновляет указанный столбец логическим значением.
+
+void updateBoolean(String columnLabel,
+                   boolean x) - Обновляет указанный столбец логическим значением.
+
+void updateByte(int columnIndex,
+                byte x) - Обновляет указанный столбец байтовым значением.
+
+void updateByte(String columnLabel,
+                byte x) - Обновляет указанный столбец байтовым значением.
+
+void updateBytes(int columnIndex,
+                 byte[] x) - Обновляет указанный столбец значением массива байтов.
+
+void updateBytes(String columnLabel,
+                 byte[] x) - Обновляет указанный столбец значением массива байтов.
+
+void updateCharacterStream(int columnIndex,
+                           Reader x) - Обновляет указанный столбец значением
+                                       потока символов.
+
+void updateCharacterStream(int columnIndex,
+                           Reader x,
+                           int length) - Обновляет назначенный столбец значением
+                                         потока символов, которое будет иметь
+                                         указанное количество байтов.
+
+void updateCharacterStream(int columnIndex,
+                           Reader x,
+                           long length) - Обновляет назначенный столбец значением
+                                          потока символов, которое будет иметь
+                                          указанное количество байтов.
+
+void updateCharacterStream(String columnLabel,
+                           Reader reader) - Обновляет указанный столбец значением
+                                            потока символов.
+
+void updateCharacterStream(String columnLabel,
+                           Reader reader,
+                           int length) - Обновляет назначенный столбец значением
+                                         потока символов, которое будет иметь
+                                         указанное количество байтов.
+
+void updateCharacterStream(String columnLabel,
+                           Reader reader,
+                           long length) - Обновляет назначенный столбец значением
+                                          потока символов, которое будет иметь
+                                          указанное количество байтов.
+
+void updateClob(int columnIndex,
+                Clob x) - Обновляет назначенный столбец значением java.sql.Clob.
+
+void updateClob(int columnIndex,
+                Reader reader) - Обновляет назначенный столбец, используя данный
+                                 объект Reader.
+
+void updateClob(int columnIndex,
+                Reader reader,
+                long length) - Обновляет назначенный столбец, используя заданный
+                               объект Reader, длина которого составляет заданное
+                               количество символов.
+
+void updateClob(String columnLabel,
+                Clob x) - Обновляет назначенный столбец значением java.sql.Clob.
+
+void updateClob(String columnLabel,
+                Reader reader) - Обновляет назначенный столбец, используя данный
+                                 объект Reader.
+
+void updateClob(String columnLabel,
+                Reader reader,
+                long length) - Обновляет назначенный столбец, используя заданный
+                               объект Reader, длина которого составляет заданное
+                               количество символов.
+
+void updateDate(int columnIndex,
+                Date x) - Обновляет назначенный столбец значением java.sql.Date.
+
+void updateDate(String columnLabel,
+                Date x) - Обновляет назначенный столбец значением java.sql.Date.
+
+void updateDouble(int columnIndex,
+                  double x) - Обновляет указанный столбец двойным значением.
+
+void updateDouble(String columnLabel,
+                  double x) - Обновляет указанный столбец двойным значением.
+
+void updateFloat(int columnIndex,
+                 float x) - Обновляет указанный столбец значением с плавающей запятой.
+
+void updateFloat(String columnLabel,
+                 float x) - Обновляет указанный столбец значением с плавающей запятой.
+
+void updateInt(int columnIndex,
+               int x) - Обновляет указанный столбец значением int.
+
+void updateInt(String columnLabel,
+               int x) - Обновляет указанный столбец значением int.
+
+void updateLong(int columnIndex,
+                long x) - Обновляет указанный столбец длинным значением.
+
+void updateLong(String columnLabel,
+                long x) - Обновляет указанный столбец длинным значением.
+
+void updateNCharacterStream(int columnIndex,
+                            Reader x) - Обновляет указанный столбец значением
+                                        потока символов.
+
+void updateNCharacterStream(int columnIndex,
+                            Reader x,
+                            long length) - Обновляет назначенный столбец значением потока
+                                           символов, которое будет иметь указанное количество
+                                           байтов.
+
+void updateNCharacterStream(String columnLabel,
+                            Reader reader) - Обновляет указанный столбец значением потока символов.
+
+void updateNCharacterStream(String columnLabel,
+                            Reader reader,
+                            long length) - Обновляет назначенный столбец значением потока символов,
+                                           которое будет иметь указанное количество байтов.
+
+void updateNClob(int columnIndex,
+                 NClob nClob) - Обновляет назначенный столбец значением java.sql.NClob.
+
+void updateNClob(int columnIndex,
+                 Reader reader) - Обновляет назначенный столбец с помощью данного модуля чтения.
+                                  Данные будут считываться из потока по мере необходимости, пока
+                                  не будет достигнут конец потока.
+
+void updateNClob(int columnIndex,
+                 Reader reader,
+                 long length) - Обновляет назначенный столбец, используя заданный объект Reader,
+                                длина которого составляет заданное количество символов.
+
+void updateNClob(String columnLabel,
+                 NClob nClob) - Обновляет назначенный столбец значением java.sql.NClob.
+
+void updateNClob(String columnLabel,
+                 Reader reader) - Обновляет назначенный столбец, используя данный объект Reader.
+
+void updateNClob(String columnLabel,
+                 Reader reader,
+                 long length) - Обновляет назначенный столбец, используя данный объект Reader,
+                                который заданное количество символов.
+
+void updateNString(int columnIndex,
+                   String nString) - Обновляет указанный столбец строковым значением.
+
+void updateNString(String columnLabel,
+                   String nString) - Обновляет указанный столбец строковым значением.
+
+void updateNull(int columnIndex) - Обновляет назначенный столбец с нулевым значением.
+
+void updateNull(String columnLabel) - Обновляет назначенный столбец с нулевым значением.
+
+void updateObject(int columnIndex,
+                  Object x) - Обновляет указанный столбец значением объекта.
+
+void updateObject(int columnIndex,
+                  Object x,
+                  int scaleOrLength) - Обновляет указанный столбец значением объекта.
+
+void updateObject(String columnLabel,
+                  Object x) - Обновляет указанный столбец значением объекта.
+
+void updateObject(String columnLabel,
+                  Object x,
+                  int scaleOrLength) - Обновляет указанный столбец значением объекта.
+
+void updateRef(int columnIndex,
+               Ref x) - Обновляет назначенный столбец значением java.sql.Ref.
+
+void updateRef(String columnLabel,
+               Ref x) - Обновляет назначенный столбец значением java.sql.Ref.
+
+void updateRow() - Обновляет базовую базу данных новым содержимым текущей строки
+                   этого объекта ResultSet.
+
+void updateRowId(int columnIndex,
+                 RowId x) - Обновляет назначенный столбец значением RowId.
+
+void updateRowId(String columnLabel,
+                 RowId x) - Обновляет назначенный столбец значением RowId.
+
+void updateShort(int columnIndex,
+                 short x) - Обновляет указанный столбец коротким значением.
+
+void updateShort(String columnLabel,
+                 short x) - Обновляет указанный столбец коротким значением.
+
+void updateSQLXML(int columnIndex,
+                  SQLXML xmlObject) - Обновляет указанный столбец значением java.sql.SQLXML.
+
+void updateSQLXML(String columnLabel,
+                  SQLXML xmlObject) - Обновляет указанный столбец значением java.sql.SQLXML.
+
+void updateString(int columnIndex,
+                  String x) - Обновляет указанный столбец строковым значением.
+
+void updateString(String columnLabel,
+                  String x) - Обновляет указанный столбец строковым значением.
+
+void updateTime(int columnIndex,
+                Time x) - Обновляет назначенный столбец значением java.sql.Time.
+
+void updateTime(String columnLabel,
+                Time x) - Обновляет назначенный столбец значением java.sql.Time.
+
+void updateTimestamp(int columnIndex,
+                     Timestamp x) - Обновляет указанный столбец значением java.sql.Timestamp.
+
+void updateTimestamp(String columnLabel,
+                     Timestamp x) - Обновляет указанный столбец значением java.sql.Timestamp.
+
+boolean	wasNull() - Сообщает, имел ли последний прочитанный столбец значение SQL NULL.
+
+См. более подробную документацию (ENG):
+https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html
+

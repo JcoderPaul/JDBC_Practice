@@ -1,0 +1,364 @@
+****** Interface PreparedStatement ******
+
+public interface PreparedStatement extends Statement
+
+Все суперинтерфейсы: AutoCloseable, Statement, Wrapper
+Все известные субинтерфейсы: CallableStatement
+
+Объект, представляющий предварительно скомпилированный
+оператор SQL. Оператор SQL предварительно компилируется
+и сохраняется в объекте PreparedStatement. Затем этот
+объект можно использовать для эффективного многократного
+выполнения этого оператора.
+
+!!! Примечание !!!
+Методы установки (setShort, setString и т. д.) для установки
+значений параметров IN должны указывать типы, совместимые
+с определенным типом SQL входного параметра. Например, если
+параметр IN имеет тип SQL INTEGER, то следует использовать
+метод setInt.
+
+Если требуются произвольные преобразования типов параметров,
+следует использовать метод setObject с целевым типом SQL.
+
+В следующем примере установки параметра 'con' представляет
+активное соединение:
+
+******************************************************************
+PreparedStatement pstmt = con.prepareStatement("UPDATE EMPLOYEES
+                                    SET SALARY = ? WHERE ID = ?");
+pstmt.setBigDecimal(1, 153833.00)
+pstmt.setInt(2, 110592)
+******************************************************************
+
+Поля и константы, унаследованные от интерфейса java.sql.Statement:
+CLOSE_ALL_RESULTS, CLOSE_CURRENT_RESULT, EXECUTE_FAILED,
+KEEP_CURRENT_RESULT, NO_GENERATED_KEYS, RETURN_GENERATED_KEYS,
+SUCCESS_NO_INFO
+
+****** Методы ******
+
+void addBatch() - Добавляет набор параметров в пакет команд
+                  этого объекта PreparedStatement.
+
+void clearParameters() - Немедленно очищает текущие значения параметров.
+
+boolean execute() - Выполняет оператор SQL в этом объекте PreparedStatement,
+                    который может быть оператором SQL любого типа.
+
+ResultSet executeQuery() - Выполняет запрос SQL в этом объекте PreparedStatement
+                           и возвращает объект ResultSet, сгенерированный запросом.
+
+int executeUpdate() - Выполняет оператор SQL в этом объекте PreparedStatement,
+                      который должен быть оператором языка манипулирования данными
+                      SQL (DML), например INSERT, UPDATE или DELETE; или оператор
+                      SQL, который ничего не возвращает, например оператор DDL.
+
+ResultSetMetaData getMetaData() - Извлекает объект ResultSetMetaData, содержащий
+                                  информацию о столбцах объекта ResultSet, которые
+                                  будут возвращены при выполнении этого объекта
+                                  PreparedStatement.
+
+ParameterMetaData getParameterMetaData() - Извлекает количество, типы и свойства
+                                           параметров этого объекта PreparedStatement.
+
+void setArray(int parameterIndex,
+              Array x) - Устанавливает назначенный параметр для данного
+                         объекта java.sql.Array.
+
+void setAsciiStream(int parameterIndex,
+                    InputStream x) - Устанавливает назначенный параметр для
+                                     данного входного потока.
+
+void setAsciiStream(int parameterIndex,
+                    InputStream x,
+                    int length) - Устанавливает назначенный параметр для данного
+                                  входного потока, который будет иметь указанное
+                                  количество байтов.
+
+void setAsciiStream(int parameterIndex,
+                    InputStream x,
+                    long length) - Устанавливает назначенный параметр для данного
+                                   входного потока, который будет иметь указанное
+                                   количество байтов.
+
+void setBigDecimal(int parameterIndex,
+                   BigDecimal x) - Устанавливает указанный параметр в заданное
+                                   значение java.math.BigDecimal.
+
+void setBinaryStream(int parameterIndex,
+                     InputStream x) - Устанавливает назначенный параметр для
+                                      данного входного потока.
+
+void setBinaryStream(int parameterIndex,
+                     InputStream x,
+                     int length) - Устанавливает назначенный параметр для данного
+                                   входного потока, который будет иметь указанное
+                                   количество байтов.
+
+void setBinaryStream(int parameterIndex,
+                     InputStream x,
+                     long length) - Устанавливает назначенный параметр для данного
+                                    входного потока, который будет иметь указанное
+                                    количество байтов.
+
+void setBlob(int parameterIndex,
+             Blob x) - Задает назначенный параметр для данного объекта java.sql.Blob.
+
+void setBlob(int parameterIndex,
+             InputStream inputStream) - Устанавливает назначенный параметр в
+                                        объект InputStream.
+
+void setBlob(int parameterIndex,
+             InputStream inputStream,
+             long length) - Устанавливает назначенный параметр
+                            в объект InputStream.
+
+void setBoolean(int parameterIndex,
+                boolean x) - Устанавливает указанный параметр в заданное
+                             логическое значение Java.
+
+void setByte(int parameterIndex,
+             byte x) - Устанавливает указанный параметр в заданное значение
+                       байта Java.
+
+void setBytes(int parameterIndex,
+              byte[] x) - Устанавливает указанный параметр в заданный массив
+                          байтов Java.
+
+void setCharacterStream(int parameterIndex,
+                        Reader reader) - Устанавливает назначенный параметр
+                                         для данного объекта Reader.
+
+void setCharacterStream(int parameterIndex,
+                        Reader reader,
+                        int length) - Устанавливает назначенный параметр для
+                                      данного объекта Reader, длина которого
+                                      составляет заданное количество символов.
+
+void setCharacterStream(int parameterIndex,
+                        Reader reader,
+                        long length) - Устанавливает назначенный параметр
+                                       для данного объекта Reader, длина
+                                       которого составляет заданное
+                                       количество символов.
+
+void setClob(int parameterIndex,
+             Clob x) - Устанавливает назначенный параметр для данного
+                       объекта java.sql.Clob.
+
+void setClob(int parameterIndex,
+             Reader reader) - Устанавливает указанный параметр в объект Reader.
+
+void setClob(int parameterIndex,
+             Reader reader,
+             long length) - Устанавливает указанный параметр в объект Reader.
+
+void setDate(int parameterIndex,
+             Date x) - Устанавливает указанный параметр в заданное значение
+                       java.sql.Date, используя часовой пояс по умолчанию
+                       для виртуальной машины, на которой запущено приложение.
+
+void setDate(int parameterIndex,
+             Date x,
+             Calendar cal) - Устанавливает указанный параметр в заданное
+                             значение java.sql.Date, используя данный
+                             объект Calendar.
+
+void setDouble(int parameterIndex,
+               double x) - Устанавливает указанный параметр в
+                           заданное двойное значение Java.
+
+void setFloat(int parameterIndex,
+              float x) - Устанавливает указанный параметр в заданное
+                         значение с плавающей запятой Java.
+
+void setInt(int parameterIndex,
+            int x) - Устанавливает указанный параметр в заданное
+                     значение Java int.
+
+void setLong(int parameterIndex,
+             long x) - Устанавливает указанный параметр в заданное длинное
+                       значение Java.
+
+void setNCharacterStream(int parameterIndex,
+                         Reader value) - Устанавливает указанный параметр
+                                         в объект Reader.
+
+void setNCharacterStream(int parameterIndex,
+                         Reader value,
+                         long length) - Устанавливает указанный параметр
+                                        в объект Reader.
+
+void setNClob(int parameterIndex,
+              NClob value) - Задает назначенный параметр для
+                             объекта java.sql.NClob.
+
+void setNClob(int parameterIndex,
+              Reader reader) - Устанавливает указанный параметр
+                               в объект Reader.
+
+void setNClob(int parameterIndex,
+              Reader reader,
+              long length) - Устанавливает указанный параметр в
+                             объект Reader.
+
+void setNString(int parameterIndex,
+                String value) - Устанавливает указанный параметр в
+                                данный объект String.
+
+void setNull(int parameterIndex,
+             int sqlType) - Устанавливает указанный параметр в SQL NULL.
+
+void setNull(int parameterIndex,
+             int sqlType,
+             String typeName) - Устанавливает указанный параметр в SQL NULL.
+
+void setObject(int parameterIndex,
+               Object x) - Устанавливает значение назначенного параметра,
+                           используя данный объект.
+
+void setObject(int parameterIndex,
+               Object x,
+               int targetSqlType) - Устанавливает значение назначенного
+                                    параметра с данным объектом.
+
+void setObject(int parameterIndex,
+               Object x,
+               int targetSqlType,
+               int scaleOrLength) - Устанавливает значение назначенного
+                                    параметра с данным объектом.
+
+void setRef(int parameterIndex,
+            Ref x) - Устанавливает указанный параметр в заданное
+                     значение REF(<structured-type>).
+
+void setRowId(int parameterIndex,
+              RowId x) - Устанавливает назначенный параметр для
+                         данного объекта java.sql.RowId.
+
+void setShort(int parameterIndex,
+              short x) - Устанавливает указанный параметр в заданное
+                         короткое значение Java.
+
+void setSQLXML(int parameterIndex,
+               SQLXML xmlObject) - Задает указанный параметр для данного
+                                   объекта java.sql.SQLXML.
+
+void setString(int parameterIndex,
+               String x) - Устанавливает указанный параметр в заданное
+                           значение строки Java.
+
+void setTime(int parameterIndex,
+             Time x) - Устанавливает указанный параметр в заданное
+                       значение java.sql.Time.
+
+void setTime(int parameterIndex,
+             Time x,
+             Calendar cal) - Устанавливает указанный параметр в заданное
+                             значение java.sql.Time, используя данный
+                             объект Calendar.
+
+void setTimestamp(int parameterIndex,
+                  Timestamp x) - Устанавливает указанный параметр в
+                                 заданное значение java.sql.Timestamp.
+
+void setTimestamp(int parameterIndex,
+                  Timestamp x,
+                  Calendar cal) - Устанавливает указанный параметр в заданное
+                                  значение java.sql.Timestamp, используя
+                                  данный объект Calendar.
+
+void setUnicodeStream(int parameterIndex,
+                      InputStream x,
+                      int length) - Устарело.
+
+void setURL(int parameterIndex,
+            URL x) - Устанавливает указанный параметр в заданное
+                     значение java.net.URL.
+
+****** Методы, унаследованные от интерфейса java.sql.Statement ******
+
+addBatch, cancel, clearBatch, clearWarnings, close, closeOnCompletion,
+execute, execute, execute, execute, executeBatch, executeQuery,
+executeUpdate, executeUpdate, executeUpdate, executeUpdate, getConnection,
+getFetchDirection, getFetchSize, getGeneratedKeys, getMaxFieldSize,
+getMaxRows, getMoreResults, getMoreResults, getQueryTimeout, getResultSet,
+getResultSetConcurrency, getResultSetHoldability, getResultSetType,
+getUpdateCount, getWarnings, isClosed, isCloseOnCompletion, isPoolable,
+setCursorName, setEscapeProcessing, setFetchDirection, setFetchSize,
+setMaxFieldSize, setMaxRows, setPoolable, setQueryTimeout
+
+****** Методы, унаследованные от интерфейса java.sql.Wrapper ******
+
+isWrapperFor, unwrap
+
+См. более подробно документацию (ENG):
+https://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html
+
+****** Пример запроса в MySQL ******
+
+**************************************************************************************************
+public static void main(String[] args) {
+
+         try{
+             // В данном коде происходит запрос к MySQL базе данных
+             String url = "jdbc:mysql://localhost/store?serverTimezone=Europe/Moscow&useSSL=false";
+             String username = "root";
+             String password = "password";
+             Scanner scanner = new Scanner(System.in);
+
+             // Подключаем MySQL драйвер к нашему приложению
+             Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+
+             System.out.print("Input product name: ");
+             String name = scanner.nextLine();
+
+             System.out.print("Input product price: ");
+             int price = scanner.nextInt();
+
+             String sql = "INSERT INTO Products (ProductName, Price) Values (?, ?)";
+
+             try (Connection my_conn = DriverManager.getConnection(url, username, password);
+                  PreparedStatement preparedStatement = my_conn.prepareStatement(sql)){
+
+                preparedStatement.setString(1, name);
+                preparedStatement.setInt(2, price);
+
+                int rows = preparedStatement.executeUpdate();
+
+                System.out.printf("%d rows added", rows);
+             }
+         }
+         catch(Exception ex){
+             System.out.println("Connection failed...");
+
+             System.out.println(ex);
+         }
+    }
+**************************************************************************************************
+В данном случае данные вводятся с консоли и затем добавляются в базу данных.
+Для создания объекта PreparedStatement применяется метод prepareStatement()
+класса Connection. В этот метод передается выражение sql:
+
+**************************************************************************************************
+INSERT INTO Products (ProductName, Price) Values (?, ?).
+**************************************************************************************************
+
+Это выражение может содержать знаки вопроса ? - знаки подстановки, вместо
+которых будут вставляться реальные значения. Чтобы связать отдельные знаки
+подстановки с конкретными значениями у класса PreparedStatement определен
+ряд методов для различных типов данных. Все методы, которые поставляют
+значения вместо знаков подстановки, в качестве первого параметра принимают
+порядковый номер знака подстановки (нумерация начинается с 1), а в качестве
+второго параметра - собственно значение, которое вставляется вместо знака
+подстановки.
+
+Например, первый знак подстановки ? в выражении sql представляет значение
+для столбца ProductName, который хранит строку. Поэтому для связи значения
+с первым знаком подстановки применяется метод:
+preparedStatement.setString(1, name).
+
+Второй знак подстановки должен передавать значение для столбца Price, который
+хранит целые числа. Поэтому для вставки значения используется метод:
+preparedStatement.setInt(2, price)

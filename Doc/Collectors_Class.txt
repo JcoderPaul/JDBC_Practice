@@ -1,0 +1,221 @@
+****** Class Collectors ******
+
+java.lang.Object
+java.util.stream.Collectors
+
+public final class Collectors extends Object
+
+Реализации Collector, реализующие различные полезные операции редукции,
+такие как накопление элементов в коллекции, суммирование элементов по
+различным критериям и т. д.
+
+Ниже приведены примеры использования предопределенных сборщиков для
+выполнения общих задач изменяемой редукции:
+
+**********************************************************************************
+// Аккумулируем имена в список
+List<String> list = people.stream()
+                          .map(Person::getName)
+                          .collect(Collectors.toList());
+
+// Аккумулируем имена в TreeSet
+Set<String> set = people.stream()
+                        .map(Person::getName)
+                        .collect(Collectors.toCollection(TreeSet::new));
+
+// Преобразуем элементы в строки и объединение их через запятую
+String joined = things.stream()
+                      .map(Object::toString)
+                      .collect(Collectors.joining(", "));
+
+// Вычисляем суммарную зарплату сотрудников
+int total = employees.stream()
+                     .collect(Collectors.summingInt(Employee::getSalary)));
+
+// Группируем работников по департаментам
+Map<Department, List<Employee>> byDept =
+            employees.stream()
+                     .collect(Collectors.groupingBy(Employee::getDepartment));
+
+// Рассчитываем суммарную зарплату по департаментам
+Map<Department, Integer> totalByDept =
+                employees.stream()
+                         .collect(Collectors.groupingBy(Employee::getDepartment,
+                                  Collectors.summingInt(Employee::getSalary)));
+
+// Разделяем учащихся на сдавших и не сдавших
+Map<Boolean, List<Student>> passingFailing =
+              students.stream()
+                      .collect(Collectors.partitioningBy(s ->
+                                                s.getGrade() >= PASS_THRESHOLD));
+**********************************************************************************
+
+****** МЕТОДЫ ******
+
+static <T> Collector<T,?,Double> averagingDouble(ToDoubleFunction<? super T> mapper) - Возвращает Collector,
+который производит среднее арифметическое функции с двойным значением, применяемой к входным элементам.
+
+static <T> Collector<T,?,Double> averagingInt(ToIntFunction<? super T> mapper) - Возвращает Collector,
+который производит среднее арифметическое целочисленной функции, применяемой к входным элементам.
+
+static <T> Collector<T,?,Double> averagingLong(ToLongFunction<? super T> mapper) - Возвращает Collector,
+который производит среднее арифметическое функции с длинным значением, примененной к входным элементам.
+
+static <T,A,R,RR> Collector<T,A,RR>	collectingAndThen(Collector<T,A,R> downstream, Function<R,RR> finisher) -
+Адаптирует Collector для выполнения дополнительной завершающей трансформации.
+
+static <T> Collector<T,?,Long> counting() - Возвращает Collector, принимающий элементы типа T, который
+                                            подсчитывает количество входных элементов.
+
+static <T,K> Collector<T,?,Map<K,List<T>>> groupingBy(Function<? super T,? extends K> classifier) - Возвращает
+Collector, реализующий операцию «группировать по» для входных элементов типа T, группируя элементы в соответствии
+с функцией классификации и возвращая результаты в Map.
+
+static <T,K,A,D> Collector<T,?,Map<K,D>> groupingBy(Function<? super T,? extends K> classifier,
+                                                    Collector<? super T,A,D> downstream) - Возвращает Collector,
+реализующий каскадную операцию «группировать по» для входных элементов типа T, группируя элементы в соответствии
+с функцией классификации, а затем выполняя операцию сокращения значений, связанных с данным ключом, с
+использованием указанного нижестоящего Collector.
+
+static <T,K,D,A,M extends Map<K,D>> Collector<T,?,M> groupingBy(Function<? super T,? extends K> classifier,
+                                                                Supplier<M> mapFactory,
+                                                                Collector<? super T,A,D> downstream) - Возвращает
+Collector, реализующий каскадную операцию «группировать по» для входных элементов типа T, группируя элементы в
+соответствии с функцией классификации, а затем выполняя операцию сокращения значений, связанных с данным ключом,
+с использованием указанного нижестоящего Collector.
+
+static <T,K> Collector<T,?,ConcurrentMap<K,List<T>>> groupingByConcurrent(Function<? super T,? extends K> classifier) -
+Возвращает параллельный сборщик, реализующий операцию "группировать по" для входных элементов типа T, группируя
+элементы в соответствии с функцией классификации.
+
+static <T,K,A,D> Collector<T,?,ConcurrentMap<K,D>> groupingByConcurrent(Function<? super T,? extends K> classifier,
+                                                                        Collector<? super T,A,D> downstream) -
+Возвращает параллельный Collector, реализующий каскадную операцию "группировать по" для входных элементов типа T,
+группируя элементы в соответствии с функцией классификации, а затем выполняя операцию редукции значений, связанных
+с данным ключом, с использованием указанного нижестоящего Коллектора.
+
+static <T,K,A,D,M extends ConcurrentMap<K,D>> Collector<T,?,M>
+                                                   groupingByConcurrent(Function<? super T,? extends K> classifier,
+                                                   Supplier<M> mapFactory,
+                                                   Collector<? super T,A,D> downstream) - Возвращает параллельный
+Collector, реализующий каскадную операцию "группировать по" для входных элементов типа T, группируя элементы в
+соответствии с функцией классификации, а затем выполняя операцию редукции значений, связанных с данным ключом,
+с использованием указанного нижестоящего Collector.
+
+static Collector<CharSequence,?,String>	joining() - Возвращает Collector, который объединяет входные элементы
+                                                    в строку в порядке их появления.
+
+static Collector<CharSequence,?,String>	joining(CharSequence delimiter) - Возвращает Collector, который
+                                                    объединяет входные элементы, разделенные указанным
+                                                    разделителем, в порядке встречи.
+
+static Collector<CharSequence,?,String>	joining(CharSequence delimiter,
+                                                CharSequence prefix,
+                                                CharSequence suffix) - Возвращает Collector, который объединяет
+                                                входные элементы, разделенные указанным разделителем, с указанным
+                                                префиксом и суффиксом в порядке встречи.
+
+static <T,U,A,R> Collector<T,?,R> mapping(Function<? super T,? extends U> mapper,
+                                          Collector<? super U,A,R> downstream) - Адаптирует Collector,
+принимающий элементы типа U, к коллектору, принимающему элементы типа T, применяя функцию сопоставления
+к каждому входному элементу перед накоплением.
+
+static <T> Collector<T,?,Optional<T>> maxBy(Comparator<? super T> comparator) - Возвращает Collector,
+который создает максимальный элемент в соответствии с заданным Comparator, описанным как Optional<T>.
+
+static <T> Collector<T,?,Optional<T>> minBy(Comparator<? super T> comparator) - Возвращает Collector,
+который создает минимальный элемент в соответствии с заданным Comparator, описанным как Optional<T>.
+
+static <T> Collector<T,?,Map<Boolean,List<T>>> partitioningBy(Predicate<? super T> predicate) - Возвращает
+Collector, который разделяет входные элементы в соответствии с Predicate и организует их
+в Map<Boolean, List<T>>.
+
+static <T,D,A> Collector<T,?,Map<Boolean,D>> partitioningBy(Predicate<? super T> predicate,
+                                                            Collector<? super T,A,D> downstream) - Возвращает
+Collector, который разделяет входные элементы в соответствии с предикатом, сокращает значения в каждом разделе
+в соответствии с другим коллектором и организует их в Map<Boolean, D>, значения которого являются результатом
+нисходящей редукции.
+
+static <T> Collector<T,?,Optional<T>> reducing(BinaryOperator<T> op) - Возвращает Collector, который выполняет
+сокращение своих входных элементов под указанным BinaryOperator.
+
+static <T> Collector<T,?,T>	reducing(T identity,
+                                     BinaryOperator<T> op) - Возвращает Collector, который выполняет сокращение
+                                                             своих входных элементов под указанным BinaryOperator,
+                                                             используя предоставленное удостоверение.
+
+static <T,U> Collector<T,?,U> reducing(U identity,
+                                       Function<? super T,? extends U> mapper,
+                                       BinaryOperator<U> op) - Возвращает Collector, который выполняет сокращение
+                                                               своих входных элементов с помощью указанной функции
+                                                               сопоставления и BinaryOperator.
+
+static <T> Collector<T,?,DoubleSummaryStatistics> summarizingDouble(ToDoubleFunction<? super T> mapper) - Возвращает
+Collector, который применяет функцию сопоставления с двойным созданием к каждому входному элементу и возвращает
+сводную статистику для результирующих значений.
+
+static <T> Collector<T,?,IntSummaryStatistics> summarizingInt(ToIntFunction<? super T> mapper) - Возвращает Collector,
+который применяет функцию сопоставления, производящую int, к каждому входному элементу и возвращает сводную статистику
+для результирующих значений.
+
+static <T> Collector<T,?,LongSummaryStatistics> summarizingLong(ToLongFunction<? super T> mapper) - Возвращает
+Collector, который применяет длительную функцию сопоставления к каждому входному элементу и возвращает сводную
+статистику для результирующих значений.
+
+static <T> Collector<T,?,Double> summingDouble(ToDoubleFunction<? super T> mapper) - Возвращает Collector,
+который производит сумму функции с двойным значением, примененной к входным элементам.
+
+static <T> Collector<T,?,Integer> summingInt(ToIntFunction<? super T> mapper) - Возвращает Collector, который
+производит сумму целочисленной функции, применяемой к входным элементам.
+
+static <T> Collector<T,?,Long> summingLong(ToLongFunction<? super T> mapper) - Возвращает Collector, который
+производит сумму функции с длинным значением, примененной к входным элементам.
+
+static <T,C extends Collection<T>> Collector<T,?,C> toCollection(Supplier<C> collectionFactory) - Возвращает
+Collector, который собирает входные элементы в новую коллекцию в порядке их появления.
+
+static <T,K,U> Collector<T,?,ConcurrentMap<K,U>> toConcurrentMap(Function<? super T,? extends K> keyMapper,
+                                                                 Function<? super T,? extends U> valueMapper) -
+Возвращает параллельный Collector, который накапливает элементы в ConcurrentMap, ключи и значения которого
+являются результатом применения предоставленных функций сопоставления к входным элементам.
+
+static <T,K,U> Collector<T,?,ConcurrentMap<K,U>> toConcurrentMap(Function<? super T,? extends K> keyMapper,
+                                                                 Function<? super T,? extends U> valueMapper,
+                                                                 BinaryOperator<U> mergeFunction) -
+Возвращает параллельный Collector, который накапливает элементы в ConcurrentMap, ключи и значения которого
+являются результатом применения предоставленных функций сопоставления к входным элементам.
+
+static <T,K,U,M extends ConcurrentMap<K,U>> Collector<T,?,M>
+                                    toConcurrentMap(Function<? super T,? extends K> keyMapper,
+                                                    Function<? super T,? extends U> valueMapper,
+                                                    BinaryOperator<U> mergeFunction,
+                                                    Supplier<M> mapSupplier) - Возвращает параллельный Collector,
+который накапливает элементы в ConcurrentMap, ключи и значения которого являются результатом применения
+предоставленных функций сопоставления к входным элементам.
+
+static <T> Collector<T,?,List<T>> toList() - Возвращает коллектор, который накапливает входные элементы в
+                                             новый список.
+
+static <T,K,U> Collector<T,?,Map<K,U>> toMap(Function<? super T,? extends K> keyMapper,
+                                             Function<? super T,? extends U> valueMapper) - Возвращает Collector,
+который накапливает элементы в Map, чьи ключи и значения являются результатом применения предоставленных функций
+сопоставления к входным элементам.
+
+static <T,K,U> Collector<T,?,Map<K,U>> toMap(Function<? super T,? extends K> keyMapper,
+                                             Function<? super T,? extends U> valueMapper,
+                                             BinaryOperator<U> mergeFunction) - Возвращает Collector,
+который накапливает элементы в Map, чьи ключи и значения являются результатом применения предоставленных функций
+сопоставления к входным элементам.
+
+static <T,K,U,M extends Map<K,U>> Collector<T,?,M> toMap(Function<? super T,? extends K> keyMapper,
+                                                         Function<? super T,? extends U> valueMapper,
+                                                         BinaryOperator<U> mergeFunction,
+                                                         Supplier<M> mapSupplier) - Возвращает Collector,
+который накапливает элементы в Map, чьи ключи и значения являются результатом применения предоставленных функций
+сопоставления к входным элементам.
+
+static <T> Collector<T,?,Set<T>> toSet() - Возвращает коллектор, который собирает входные элементы в новый набор.
+
+*******************************************************************************************************************
+См. более подробно: https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html
+*******************************************************************************************************************
