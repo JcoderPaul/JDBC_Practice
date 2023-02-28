@@ -1,0 +1,6 @@
+В данном разделе исследуются следующие случаи:
+- [SQLQueryApp_9](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_9.java) - пример работы методов  *.setFetchSize(), *.setQueryTimeout(), *.setMaxRows() интерфейса [PreparedStatement](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/PreparedStatement_Interface.txt);
+- [SQLQueryApp_10](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_10.java) - пример работы интерфейса [DatabaseMetaData](https://github.com/JcoderPaul/JDBC_Practice/blob/master/Doc/DatabaseMetaData_Interface.txt) и его методов: *.getCatalogs(), *.getCatalogs(), *.getSchemas(), *.getTables(); 
+- [SQLQueryApp_11](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_11.java) - исследование транзакций и работы операторов COMMIT и ROLLBACK;
+- [SQLQueryApp_12](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_12.java) - исследование пакетных запросов Batch;
+- [SQLQueryApp_13](https://github.com/JcoderPaul/JDBC_Practice/blob/master/SqlAdvancedLess/src/SQLQueryApp_13.java) - пример работы с Blob и Clob полями базы данных.
