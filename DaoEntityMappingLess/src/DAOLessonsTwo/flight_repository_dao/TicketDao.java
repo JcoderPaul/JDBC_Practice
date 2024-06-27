@@ -24,43 +24,36 @@ Delete — удаление
 будет реализован как Singleton.
 */
 public class TicketDao implements Dao<Long, Ticket>{
-    // Переменная экземпляра объекта
-    private static TicketDao INSTANCE;
-    // Пустой приватный конструктор
+    
+    private static TicketDao INSTANCE; // Переменная экземпляра объекта
+    
+    /* Пустой приватный конструктор */
     private TicketDao() {
     }
-    /*
-    Метод позволяющий инициализировать
-    единственный объект класса TicketDao
-    */
+    
+    /* Метод позволяющий инициализировать единственный объект класса TicketDao */
     public static TicketDao getInstance() {
         if (INSTANCE == null){
             INSTANCE = new TicketDao();
         }
         return INSTANCE;
     }
-    /* Получаем экземпляр класса FlightDao */
-    private final FlightDao flightDao = FlightDao.getInstance();
-    /*
-    SQL запрос на удаление одной записи из таблицы
-    Ticket по ID в формате PrepareStatement
-    */
+   
+    private final FlightDao flightDao = FlightDao.getInstance(); // Получаем экземпляр класса FlightDao
+    
+    /* SQL запрос на удаление одной записи из таблицы Ticket по ID в формате PrepareStatement */
     private static final String DELETE_SQL = """
             DELETE FROM flight_repository.ticket
             WHERE id = ?
             """;
-    /*
-    SQL запрос на вставку одной записи в таблицу
-    Ticket в формате PrepareStatement
-    */
+    
+    /* SQL запрос на вставку одной записи в таблицу Ticket в формате PrepareStatement */
     private static final String SAVE_SQL = """
             INSERT INTO flight_repository.ticket (passenger_no, passenger_name, flight_id, seat_no, cost) 
             VALUES (?, ?, ?, ?, ?);
             """;
-    /*
-    SQL запрос на изменение одной записи в таблице
-    Ticket по ID в формате PrepareStatement
-    */
+    
+    /* SQL запрос на изменение одной записи в таблице Ticket по ID в формате PrepareStatement */
     private static final String UPDATE_SQL = """
             UPDATE flight_repository.ticket
             SET passenger_no = ?,
@@ -70,6 +63,7 @@ public class TicketDao implements Dao<Long, Ticket>{
                 cost = ?
             WHERE id = ?
             """;
+    
     /* SQL запрос на получение всех записей из таблицы Ticket */
     private static final String FIND_ALL_SQL = """
             SELECT t.id,
@@ -89,22 +83,17 @@ public class TicketDao implements Dao<Long, Ticket>{
             JOIN flight_repository.flight AS f
             ON t.flight_id = f.id
             """;
-    /*
-    SQL запрос на получение данных одной записи в
-    таблице Ticket по ID в формате PrepareStatement
-    */
+    
+    /* SQL запрос на получение данных одной записи в таблице Ticket по ID в формате PrepareStatement */
     private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
             WHERE t.id = ?
             """;
+    
     /*
-    Метод для работы с FIND_ALL_SQL запросом. Перегруженный метод
-    *.findAll(TicketFilter filter) приведен в самом низу данного
-    класса, он принимает в качестве аргументов ссылку на
-    TicketFilter - Data Transfer Object (DTO) — один из шаблонов
-    проектирования, используется для передачи данных между
-    подсистемами (слоями) приложения. Data Transfer Object, в отличие
-    от business object или data access object не должен содержать
-    какого-либо поведения.
+    Метод для работы с FIND_ALL_SQL запросом. Перегруженный метод *.findAll(TicketFilter filter) приведен в самом низу данного
+    класса, он принимает в качестве аргументов ссылку на TicketFilter - Data Transfer Object (DTO) — один из шаблонов
+    проектирования, используется для передачи данных между подсистемами (слоями) приложения. Data Transfer Object, в отличие
+    от business object или data access object не должен содержать какого-либо поведения.
     */
     public List<Ticket> findAll() {
         /* Устанавливаем связь с базой данных и готовим PrepareStatement объект */
@@ -112,25 +101,22 @@ public class TicketDao implements Dao<Long, Ticket>{
                      ConnectionPoolManager.getConnectionFromPool();
              var preparedStatement =
                      connection.prepareStatement(FIND_ALL_SQL)) {
-            /* Получаем результат запроса, как коллекцию SET */
-            var resultSet = preparedStatement.executeQuery();
-            /* Создаем список для хранения билетов полученных по запросу */
-            List<Ticket> tickets = new ArrayList<>();
+            
+            var resultSet = preparedStatement.executeQuery(); // Получаем результат запроса, как коллекцию SET
+            
+            List<Ticket> tickets = new ArrayList<>(); // Создаем список для хранения билетов полученных по запросу
             while (resultSet.next()) {
-                /* Загружаем полученный список в коллекцию*/
-                tickets.add(buildTicket(resultSet));
+                tickets.add(buildTicket(resultSet)); // Загружаем полученный список в коллекцию
             }
-            /* Возвращаем результат */
-            return tickets;
+            return tickets; // Возвращаем результат
         } catch (SQLException throwables) {
             throw new DaoException(throwables);
         }
     }
-    /*
-    Метод для получения данных о билете по ID.
-    Результат запроса неоднозначен, поскольку
-    может быть запрошен ID которого нет в базе,
-    отсюда и возвращаемый объект Optional.
+    
+    /* 
+    Метод для получения данных о билете по ID. Результат запроса неоднозначен, поскольку     
+    может быть запрошен ID которого нет в базе, отсюда и возвращаемый объект Optional.
     */
     public Optional<Ticket> findById(Long id) {
         /* Устанавливаем связь, передаем подготовленный FIND_BY_ID_SQL запрос */
@@ -138,26 +124,16 @@ public class TicketDao implements Dao<Long, Ticket>{
                      ConnectionPoolManager.getConnectionFromPool();
              var preparedStatement =
                      connection.prepareStatement(FIND_BY_ID_SQL)) {
-            /* Устанавливаем интересующий нас параметр в запрос */
-            preparedStatement.setLong(1, id);
-            /*
-            Только после окончательного формирования запроса
-            и установки всех параметров передаем запрос в базу
-            данных
-            */
-            var resultSet = preparedStatement.executeQuery();
-            /* Создаем пустую ссылку на объект Ticket */
-            Ticket ticket = null;
+            
+            preparedStatement.setLong(1, id); // Устанавливаем нужный нам параметр в запрос (в данном случае первый параметр)
+            var resultSet = preparedStatement.executeQuery(); //Только после окончательного формирования запроса и установки всех параметров передаем запрос в базу данных
+            Ticket ticket = null; // Создаем пустую ссылку на объект Ticket
             if (resultSet.next()) {
-                /*
-                Инициализируем наш объект методом *.buildTicket()
-                куда передали результат запроса
-                */
-                ticket = buildTicket(resultSet);
+                ticket = buildTicket(resultSet); // Инициализируем наш объект методом *.buildTicket() куда передали результат запроса
             }
+            
             /*
-            Мы получаем объект, в котором может быть запрашиваемый объект —
-            а может быть null. Но с Optional надо как-то работать дальше,
+            Мы получаем объект, в котором может быть запрашиваемый объект — а может быть null. Но с Optional надо как-то работать дальше,
             нам нужна сущность, которую он содержит (или не содержит).
 
             Cуществует всего три категории Optional:
@@ -167,14 +143,14 @@ public class TicketDao implements Dao<Long, Ticket>{
                                     Optional-объект.
             - Optional.empty - возвращает пустой Optional-объект.
 
-            Существует так же два метода, вытекающие из познания, существует
-            обёрнутый объект или нет — isPresent() и ifPresent()
+            Существует так же два метода, вытекающие из познания, существует обёрнутый объект или нет — isPresent() и ifPresent()
             */
             return Optional.ofNullable(ticket);
         } catch (SQLException throwables) {
             throw new DaoException(throwables);
         }
     }
+    
     /* Метод для обновления сведений о билете */
     public void update(Ticket dataIn) {
         /* Создаем соединение с базой и передаем UPDATE_SQL запрос */
@@ -195,6 +171,7 @@ public class TicketDao implements Dao<Long, Ticket>{
             throw new DaoException(throwables);
         }
     }
+    
     /*
     Метод для сохранения данных нового билета в базе данных.
     Сам объект-билет передается в качестве параметра из которого
@@ -216,16 +193,12 @@ public class TicketDao implements Dao<Long, Ticket>{
             preparedStatement.setLong(3, dataIn.getFlight().id());
             preparedStatement.setString(4, dataIn.getSeatNo());
             preparedStatement.setBigDecimal(5, dataIn.getCost());
-            /* Отправляем запрос в базу */
-            preparedStatement.executeUpdate();
-            /* Получаем из базы вновь сгенерированный ID */
-            var generatedKeys = preparedStatement.getGeneratedKeys();
+            preparedStatement.executeUpdate(); // Отправляем запрос в базу
+            var generatedKeys = preparedStatement.getGeneratedKeys(); // Получаем из базы вновь сгенерированный ID
             if (generatedKeys.next()) {
-                /* Помещаем его в полученный Ticket объект */
-                dataIn.setId(generatedKeys.getLong("id"));
+                 dataIn.setId(generatedKeys.getLong("id")); // Помещаем его в полученный Ticket объект
             }
-            /* Возвращаем полный Ticket объект */
-            return dataIn;
+            return dataIn; // Возвращаем полный Ticket объект
         } catch (SQLException throwables) {
             throw new DaoException(throwables);
         }
