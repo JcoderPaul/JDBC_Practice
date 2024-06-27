@@ -203,6 +203,7 @@ public class TicketDao implements Dao<Long, Ticket>{
             throw new DaoException(throwables);
         }
     }
+    
     /* Метод для удаления записи из базы данных по ID */
     public boolean delete(Long id) {
         /* Try-with-resources для объектов Connection и PrepareStatement */
@@ -218,11 +219,8 @@ public class TicketDao implements Dao<Long, Ticket>{
             throw new DaoException(throwables);
         }
     }
-    /*
-    Метод извлекающий сведения о билете из объекта
-    ResultSet и применяемый в методах *.findById()
-    и *.findAll()
-    */
+    
+    /* Метод извлекающий сведения о билете из объекта ResultSet и применяемый в методах *.findById() и *.findAll() */
     private Ticket buildTicket(ResultSet resultSet) throws SQLException {
         var flight = new Flight(
                 resultSet.getLong("flight_id"),
@@ -244,12 +242,10 @@ public class TicketDao implements Dao<Long, Ticket>{
                 resultSet.getBigDecimal("cost")
         );
     }
+    
     /* Перегруженный метод findAll с фильтрацией по входным параметрам */
     public List<Ticket> findAll(TicketFilter filter) {
-        /*
-        Список для хранения параметров
-        заменяющих символ '?' в SQL запросе
-        */
+        /* Список для хранения параметров заменяющих символ '?' в SQL запросе */
         List<Object> parameters = new ArrayList<>();
         /*
         Объект TicketFilter типа Record может содержать
@@ -261,7 +257,7 @@ public class TicketDao implements Dao<Long, Ticket>{
         */
         List<String> whereSql = new ArrayList<>();
         /*
-        Если переданный в TicketFilter параметр NULL, то
+        Если переданный в TicketFilter параметр NULL, то 
         он просто не попадает в будущий SQL запрос или не
         интегрируется в строку как подстрока.
 
