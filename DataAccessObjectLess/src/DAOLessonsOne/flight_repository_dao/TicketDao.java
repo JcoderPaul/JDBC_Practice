@@ -253,11 +253,7 @@ public class TicketDao {
     }
     /* Перегруженный метод findAll с фильтрацией по входным параметрам */
     public List<Ticket> findAll(TicketFilter filter) {
-        /*
-        Список для хранения параметров
-        заменяющих символ '?' в SQL запросе
-        */
-        List<Object> parameters = new ArrayList<>();
+        List<Object> parameters = new ArrayList<>(); // Список для хранения параметров заменяющих символ '?' в SQL запросе
         /*
         Объект TicketFilter типа Record может содержать
         четыре параметра: limit, offset,
