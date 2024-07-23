@@ -26,41 +26,30 @@ Delete — удаление
 будет реализован как Singleton.
 */
 public class TicketDao {
-    // Переменная экземпляра объекта
-    private static TicketDao INSTANCE;
-    // Пустой приватный конструктор
-    private TicketDao() {
-    }
-    /*
-    Метод позволяющий инициализировать
-    единственный объект класса TicketDao
-    */
+    private static TicketDao INSTANCE;        // Переменная экземпляра объекта
+    private TicketDao() {}    // Пустой приватный конструктор
+    
+    /* Метод позволяющий инициализировать единственный объект класса TicketDao */
     public static TicketDao getInstance() {
         if (INSTANCE == null){
             INSTANCE = new TicketDao();
         }
         return INSTANCE;
     }
-    /*
-    SQL запрос на удаление одной записи из таблицы
-    Ticket по ID в формате PrepareStatement
-    */
+    
+    /* SQL запрос на удаление одной записи из таблицы Ticket по ID в формате PrepareStatement */
     private static final String DELETE_SQL = """
             DELETE FROM flight_repository.ticket
             WHERE id = ?
             """;
-    /*
-    SQL запрос на вставку одной записи в таблицу
-    Ticket в формате PrepareStatement
-    */
+    
+    /* SQL запрос на вставку одной записи в таблицу Ticket в формате PrepareStatement */
     private static final String SAVE_SQL = """
             INSERT INTO flight_repository.ticket (passenger_no, passenger_name, flight_id, seat_no, cost) 
             VALUES (?, ?, ?, ?, ?);
             """;
-    /*
-    SQL запрос на изменение одной записи в таблице
-    Ticket по ID в формате PrepareStatement
-    */
+    
+    /* SQL запрос на изменение одной записи в таблице Ticket по ID в формате PrepareStatement */
     private static final String UPDATE_SQL = """
             UPDATE flight_repository.ticket
             SET passenger_no = ?,
@@ -70,6 +59,7 @@ public class TicketDao {
                 cost = ?
             WHERE id = ?
             """;
+    
     /* SQL запрос на получение всех записей из таблицы Ticket */
     private static final String FIND_ALL_SQL = """
             SELECT id,
@@ -80,13 +70,12 @@ public class TicketDao {
                 cost
             FROM flight_repository.ticket
             """;
-    /*
-    SQL запрос на получение данных одной записи в
-    таблице Ticket по ID в формате PrepareStatement
-    */
+    
+    /* SQL запрос на получение данных одной записи в таблице Ticket по ID в формате PrepareStatement */
     private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
             WHERE id = ?
             """;
+    
     /*
     Метод для работы с FIND_ALL_SQL запросом. Перегруженный метод
     *.findAll(TicketFilter filter) приведен в самом низу данного
@@ -103,20 +92,17 @@ public class TicketDao {
                      ConnectionPoolManager.getConnectionFromPool();
              var preparedStatement =
                      connection.prepareStatement(FIND_ALL_SQL)) {
-            /* Получаем результат запроса, как коллекцию SET */
-            var resultSet = preparedStatement.executeQuery();
-            /* Создаем список для хранения билетов полученных по запросу */
-            List<Ticket> tickets = new ArrayList<>();
+            var resultSet = preparedStatement.executeQuery();    // Получаем результат запроса, как коллекцию SET
+            List<Ticket> tickets = new ArrayList<>();    // Создаем список для хранения билетов полученных по запросу
             while (resultSet.next()) {
-                /* Загружаем полученный список в коллекцию*/
-                tickets.add(buildTicket(resultSet));
+                tickets.add(buildTicket(resultSet));    // Загружаем полученный список в коллекцию
             }
-            /* Возвращаем результат */
-            return tickets;
+            return tickets;    // Возвращаем результат
         } catch (SQLException throwables) {
             throw new DaoException(throwables);
         }
     }
+    
     /*
     Метод для получения данных о билете по ID.
     Результат запроса неоднозначен, поскольку
@@ -166,6 +152,7 @@ public class TicketDao {
             throw new DaoException(throwables);
         }
     }
+    
     /* Метод для обновления сведений о билете */
     public void update(Ticket ticket) {
         /* Создаем соединение с базой и передаем UPDATE_SQL запрос */
@@ -186,6 +173,7 @@ public class TicketDao {
             throw new DaoException(throwables);
         }
     }
+    
     /*
     Метод для сохранения данных нового билета в базе данных.
     Сам объект-билет передается в качестве параметра из которого
@@ -221,6 +209,7 @@ public class TicketDao {
             throw new DaoException(throwables);
         }
     }
+    
     /* Метод для удаления записи из базы данных по ID */
     public boolean delete(Long id) {
         /* Try-with-resources для объектов Connection и PrepareStatement */
@@ -236,6 +225,7 @@ public class TicketDao {
             throw new DaoException(throwables);
         }
     }
+    
     /*
     Метод извлекающий сведения о билете из объекта
     ResultSet и применяемый в методах *.findById()
@@ -251,6 +241,7 @@ public class TicketDao {
                 resultSet.getBigDecimal("cost")
         );
     }
+    
     /* Перегруженный метод findAll с фильтрацией по входным параметрам */
     public List<Ticket> findAll(TicketFilter filter) {
         List<Object> parameters = new ArrayList<>(); // Список для хранения параметров заменяющих символ '?' в SQL запросе
@@ -392,18 +383,13 @@ public class TicketDao {
             for (int i = 0; i < parameters.size(); i++) {
                 preparedStatement.setObject(i + 1, parameters.get(i));
             }
-            /* Для наглядности выводим на экран получившийся SQl запрос */
-            System.out.println(preparedStatement);
-            /* Отправляем запрос в базу и получаем результирующую выборку */
-            var resultSet = preparedStatement.executeQuery();
-            /* Коллекция куда мы поместим результат выборки */
-            List<Ticket> tickets = new ArrayList<>();
-            /* Заполняем коллекцию */
+            System.out.println(preparedStatement);    // Для наглядности выводим на экран получившийся SQl запрос
+            var resultSet = preparedStatement.executeQuery();    // Отправляем запрос в базу и получаем результирующую выборку
+            List<Ticket> tickets = new ArrayList<>();    // Коллекция куда мы поместим результат выборки
             while (resultSet.next()) {
-                tickets.add(buildTicket(resultSet));
+                tickets.add(buildTicket(resultSet));    // Заполняем коллекцию
             }
-            /* Возвращаем коллекцию */
-            return tickets;
+            return tickets;    // Возвращаем коллекцию
         } catch (SQLException throwables) {
             throw new DaoException(throwables);
         }
