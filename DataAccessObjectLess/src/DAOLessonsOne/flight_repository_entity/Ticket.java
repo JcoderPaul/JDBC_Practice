@@ -29,21 +29,13 @@ ticket в базе flight_repository содержит 6 - ть полей
 import java.math.BigDecimal;
 
 public class Ticket {
-    // Bigint в SQL это аналог Long в Java
-    private Long id;
-    // Varchar(32) в SQL это аналог String в Java
-    private String passengerNo;
-    // Varchar(128) в SQL это аналог String в Java
-    private String passengerName;
-    // Bigint в SQL это аналог Long в Java
-    private Long flightId;
-    // Varchar(128) в SQL это аналог String в Java
-    private String seatNo;
-    /*
-    Numeric (8,2) в SQL это аналог BigDecimal или Double
-    (если нас не интересует прецизионная точность) в Java
-    */
-    private BigDecimal cost;
+    private Long id;    // Bigint в SQL это аналог Long в Java
+    private String passengerNo;    // Varchar(32) в SQL это аналог String в Java
+    private String passengerName;    // Varchar(128) в SQL это аналог String в Java
+    private Long flightId;    // Bigint в SQL это аналог Long в Java
+    private String seatNo;    // Varchar(128) в SQL это аналог String в Java
+    private BigDecimal cost;    // Numeric (8,2) в SQL это аналог BigDecimal или Double (если нас не интересует прецизионная точность) в Java
+    
     /* Полный конструктор */
     public Ticket(Long id, String passengerNo, String passengerName,
                   Long flightId, String seatNo, BigDecimal cost) {
